@@ -1,0 +1,838 @@
+{
+  "id": "46a6d048-6e5c-4d6f-b393-dd01966ad716",
+  "prevId": "8abe2fe7-8a83-4558-9eb8-d2b4d137bcc7",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cateogry": {
+      "name": "cateogry",
+      "schema": "",
+      "columns": {
+        "category_id": {
+          "name": "category_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cateogry_name_unique": {
+          "name": "cateogry_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
+    "public.craft": {
+      "name": "craft",
+      "schema": "",
+      "columns": {
+        "craft_id": {
+          "name": "craft_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profession_id": {
+          "name": "profession_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "required_rank": {
+          "name": "required_rank",
+          "type": "varchar(1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "required_skill": {
+          "name": "required_skill",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "produced_quantity": {
+          "name": "produced_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creation_time": {
+          "name": "creation_time",
+          "type": "interval",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "craft_item_id_item_item_id_fk": {
+          "name": "craft_item_id_item_item_id_fk",
+          "tableFrom": "craft",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "craft_profession_id_prefession_profession_id_fk": {
+          "name": "craft_profession_id_prefession_profession_id_fk",
+          "tableFrom": "craft",
+          "tableTo": "prefession",
+          "columnsFrom": [
+            "profession_id"
+          ],
+          "columnsTo": [
+            "profession_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.creature": {
+      "name": "creature",
+      "schema": "",
+      "columns": {
+        "creature_id": {
+          "name": "creature_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.creature_drop": {
+      "name": "creature_drop",
+      "schema": "",
+      "columns": {
+        "creature_drop_id": {
+          "name": "creature_drop_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "creature_id": {
+          "name": "creature_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drop_chance": {
+          "name": "drop_chance",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "creature_drop_creature_id_creature_creature_id_fk": {
+          "name": "creature_drop_creature_id_creature_creature_id_fk",
+          "tableFrom": "creature_drop",
+          "tableTo": "creature",
+          "columnsFrom": [
+            "creature_id"
+          ],
+          "columnsTo": [
+            "creature_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "creature_drop_item_id_item_item_id_fk": {
+          "name": "creature_drop_item_id_item_item_id_fk",
+          "tableFrom": "creature_drop",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.item": {
+      "name": "item",
+      "schema": "",
+      "columns": {
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "how_to_obtain": {
+          "name": "how_to_obtain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favorite": {
+          "name": "favorite",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "npc_value": {
+          "name": "npc_value",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_category_id_cateogry_category_id_fk": {
+          "name": "item_category_id_cateogry_category_id_fk",
+          "tableFrom": "item",
+          "tableTo": "cateogry",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "category_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "item_name_unique": {
+          "name": "item_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
+    "public.item_dependency": {
+      "name": "item_dependency",
+      "schema": "",
+      "columns": {
+        "item_dependency_id": {
+          "name": "item_dependency_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Dependent_item_id": {
+          "name": "Dependent_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_dependency_item_id_item_item_id_fk": {
+          "name": "item_dependency_item_id_item_item_id_fk",
+          "tableFrom": "item_dependency",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_dependency_Dependent_item_id_item_item_id_fk": {
+          "name": "item_dependency_Dependent_item_id_item_item_id_fk",
+          "tableFrom": "item_dependency",
+          "tableTo": "item",
+          "columnsFrom": [
+            "Dependent_item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.item_value": {
+      "name": "item_value",
+      "schema": "",
+      "columns": {
+        "item_value_id": {
+          "name": "item_value_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min_sell_price": {
+          "name": "min_sell_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_sell_price": {
+          "name": "avg_sell_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_sell_price": {
+          "name": "max_sell_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_sell_price": {
+          "name": "current_sell_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sell_rate": {
+          "name": "sell_rate",
+          "type": "numeric(3, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_buy_price": {
+          "name": "min_buy_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_buy_price": {
+          "name": "avg_buy_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_buy_price": {
+          "name": "max_buy_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_buy_price": {
+          "name": "current_buy_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "buy_rate": {
+          "name": "buy_rate",
+          "type": "numeric(3, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_value_item_id_item_item_id_fk": {
+          "name": "item_value_item_id_item_item_id_fk",
+          "tableFrom": "item_value",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.prefession": {
+      "name": "prefession",
+      "schema": "",
+      "columns": {
+        "profession_id": {
+          "name": "profession_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "specialization": {
+          "name": "specialization",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rank": {
+          "name": "rank",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill": {
+          "name": "skill",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.purchase": {
+      "name": "purchase",
+      "schema": "",
+      "columns": {
+        "purchase_id": {
+          "name": "purchase_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "purchase_item_id_item_item_id_fk": {
+          "name": "purchase_item_id_item_item_id_fk",
+          "tableFrom": "purchase",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.sale": {
+      "name": "sale",
+      "schema": "",
+      "columns": {
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sale_item_id_item_item_id_fk": {
+          "name": "sale_item_id_item_item_id_fk",
+          "tableFrom": "sale",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.simulation": {
+      "name": "simulation",
+      "schema": "",
+      "columns": {
+        "simulation_id": {
+          "name": "simulation_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min_buy_cost": {
+          "name": "min_buy_cost",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_buy_cost": {
+          "name": "avg_buy_cost",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_buy_cost": {
+          "name": "max_buy_cost",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_buy_cost": {
+          "name": "current_buy_cost",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_sell_profit": {
+          "name": "min_sell_profit",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_sell_profit": {
+          "name": "avg_sell_profit",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_sell_profit": {
+          "name": "max_sell_profit",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_sell_profit": {
+          "name": "current_sell_profit",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "simulation_item_id_item_item_id_fk": {
+          "name": "simulation_item_id_item_item_id_fk",
+          "tableFrom": "simulation",
+          "tableTo": "item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
