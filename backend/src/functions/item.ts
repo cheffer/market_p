@@ -29,18 +29,40 @@ export async function getItems({
         .from(item)
         .where(
           and(
-            filters.name ? like(item.name, `%${filters.name}%`) : undefined, // Filtro por nome
+            filters.name ? like(item.name, `%${filters.name}%`) : undefined,
             filters.categoryFilter
               ? eq(item.categoryId, filters.categoryFilter)
-              : undefined, // Filtro por categoria
+              : undefined,
             filters.favorite !== undefined
               ? eq(item.favorite, filters.favorite)
-              : undefined // Filtro por favorito
+              : undefined
           )
         )
         .limit(limit)
         .offset(offset)
     )
+
+    // Consulta para contar o total de registros
+    const totalCount = await db
+      .select({
+        count: sql`COUNT(*)`.as('count'),
+      })
+      .from(item)
+      .where(
+        and(
+          filters.name ? like(item.name, `%${filters.name}%`) : undefined,
+          filters.categoryFilter
+            ? eq(item.categoryId, filters.categoryFilter)
+            : undefined,
+          filters.favorite !== undefined
+            ? eq(item.favorite, filters.favorite)
+            : undefined
+        )
+      )
+
+    const totalRegistro = Number(totalCount[0]?.count) || 0
+    const pagTotal = Math.ceil(totalRegistro / limit) // Total de páginas
+
     const getCategories = db.$with('get_categories').as(
       db
         .select({
@@ -49,6 +71,7 @@ export async function getItems({
         })
         .from(category)
     )
+
     const getDependency = db.$with('get_dependency').as(
       db
         .select({
@@ -65,16 +88,13 @@ export async function getItems({
       .select({
         itemId: getItems.itemId,
         name: getItems.name,
-        category: sql /*sql*/`      
-        JSON_BUILD_OBJECT(
-        'categoryId', ${getCategories.categoryId},
-        'name', ${getCategories.name} 
-        )     
-      `.as('category'),
+        category: sql`JSON_BUILD_OBJECT(
+          'categoryId', ${getCategories.categoryId},
+          'name', ${getCategories.name} 
+        )`.as('category'),
         npcValue: getItems.npcValue,
         howToObtain: getItems.howToObtain,
-        dependecies: sql /*sql*/`
-        COALESCE(
+        dependecies: sql`COALESCE(
             JSON_AGG(
                 CASE 
                   WHEN ${getDependency.itemDependecyId} IS NOT NULL THEN
@@ -84,9 +104,8 @@ export async function getItems({
                   ELSE NULL
                 END
             ) FILTER (WHERE ${getDependency.itemDependecyId} IS NOT NULL),
-            '[]'  -- Retorna array vazio quando não há dependências
-          )
-        `.as('itemDependecies'),
+            '[]'  
+          )`.as('itemDependecies'),
       })
       .from(getItems)
       .innerJoin(
@@ -102,7 +121,17 @@ export async function getItems({
         getItems.npcValue,
         getItems.howToObtain
       )
-    return { Items }
+
+    return {
+      Items,
+      pagination: {
+        totalRegistro,
+        pagina: Math.floor(offset / limit) + 1,
+        pagTotal,
+        limit,
+        offset,
+      },
+    }
   } catch (error) {
     console.error('Database query error:', error)
     throw new Error('Failed to fetch items from the database')

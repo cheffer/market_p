@@ -31,14 +31,14 @@ export const getItemsRoute: FastifyPluginAsyncZod = async app => {
         const favoriteBoolean =
           favorite === 'true' ? true : favorite === 'false' ? false : undefined
 
-        const { Items } = await getItems({
+        const { Items, pagination } = await getItems({
           name,
           categoryFilter,
           favorite: favoriteBoolean,
           limit,
           offset,
         })
-        return { Items }
+        return { Items, pagination }
       } catch (error) {
         console.error(error)
         return { error: 'An error occurred while fetching items' }
