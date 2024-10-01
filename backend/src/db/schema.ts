@@ -10,7 +10,7 @@ import {
   boolean,
 } from 'drizzle-orm/pg-core'
 
-export const category = pgTable('cateogry', {
+export const category = pgTable('category', {
   categoryId: text('category_id')
     .primaryKey()
     .$defaultFn(() => createId()),

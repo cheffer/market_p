@@ -1,3 +1,12 @@
+CREATE TABLE IF NOT EXISTS "category" (
+	"category_id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"description" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "category_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "craft" (
 	"craft_id" text PRIMARY KEY NOT NULL,
 	"item_id" text NOT NULL,
@@ -28,20 +37,17 @@ CREATE TABLE IF NOT EXISTS "creature_drop" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "favorite" (
-	"favorite_id" text PRIMARY KEY NOT NULL,
-	"item_id" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "item" (
 	"item_id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"category_id" text NOT NULL,
 	"how_to_obtain" text,
+	"favorite" boolean DEFAULT false NOT NULL,
+	"npc_value" numeric(12, 2),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "item_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "item_dependency" (
@@ -56,7 +62,6 @@ CREATE TABLE IF NOT EXISTS "item_dependency" (
 CREATE TABLE IF NOT EXISTS "item_value" (
 	"item_value_id" text PRIMARY KEY NOT NULL,
 	"item_id" text NOT NULL,
-	"npc_value" numeric(12, 2),
 	"min_sell_price" numeric(12, 2),
 	"avg_sell_price" numeric(12, 2),
 	"max_sell_price" numeric(12, 2),
@@ -115,8 +120,6 @@ CREATE TABLE IF NOT EXISTS "simulation" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "cateogry" ALTER COLUMN "updated_at" SET DEFAULT now();--> statement-breakpoint
-ALTER TABLE "cateogry" ALTER COLUMN "updated_at" SET NOT NULL;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "craft" ADD CONSTRAINT "craft_item_id_item_item_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."item"("item_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
@@ -142,13 +145,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "favorite" ADD CONSTRAINT "favorite_item_id_item_item_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."item"("item_id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "item" ADD CONSTRAINT "item_category_id_cateogry_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."cateogry"("category_id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "item" ADD CONSTRAINT "item_category_id_category_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."category"("category_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

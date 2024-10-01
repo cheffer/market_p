@@ -1,21 +1,24 @@
-import { and, eq, like, sql } from 'drizzle-orm'
 import { db } from '../db'
+import { and, eq, like, sql } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
+import type { postItemsQuerySchema } from '../schemas/itemsSchemas'
+import type { z } from 'zod'
 
-export async function getItems({
-  name,
-  categoryFilter,
-  favorite,
-  limit = 10,
-  offset = 0,
-}: {
+type PostItemsBody = z.infer<typeof postItemsQuerySchema>
+
+interface GetItemsQuery {
   name?: string
-  categoryFilter?: string
+  categoryId?: string
   favorite?: boolean
   limit?: number
   offset?: number
-}) {
-  const filters = { name, categoryFilter, favorite }
+}
+
+export async function getItemsFromDB(
+  filters: GetItemsQuery,
+  limit: number,
+  offset: number
+) {
   try {
     const getItems = db.$with('get_items').as(
       db
@@ -30,8 +33,8 @@ export async function getItems({
         .where(
           and(
             filters.name ? like(item.name, `%${filters.name}%`) : undefined,
-            filters.categoryFilter
-              ? eq(item.categoryId, filters.categoryFilter)
+            filters.categoryId
+              ? eq(item.categoryId, filters.categoryId)
               : undefined,
             filters.favorite !== undefined
               ? eq(item.favorite, filters.favorite)
@@ -45,14 +48,14 @@ export async function getItems({
     // Consulta para contar o total de registros
     const totalCount = await db
       .select({
-        count: sql`COUNT(*)`.as('count'),
+        count: sql /*sql*/`COUNT(*)`.as('count'),
       })
       .from(item)
       .where(
         and(
           filters.name ? like(item.name, `%${filters.name}%`) : undefined,
-          filters.categoryFilter
-            ? eq(item.categoryId, filters.categoryFilter)
+          filters.categoryId
+            ? eq(item.categoryId, filters.categoryId)
             : undefined,
           filters.favorite !== undefined
             ? eq(item.favorite, filters.favorite)
@@ -88,24 +91,24 @@ export async function getItems({
       .select({
         itemId: getItems.itemId,
         name: getItems.name,
-        category: sql`JSON_BUILD_OBJECT(
-          'categoryId', ${getCategories.categoryId},
-          'name', ${getCategories.name} 
-        )`.as('category'),
+        category: sql /*sql*/`JSON_BUILD_OBJECT(
+              'categoryId', ${getCategories.categoryId},
+              'name', ${getCategories.name} 
+            )`.as('category'),
         npcValue: getItems.npcValue,
         howToObtain: getItems.howToObtain,
-        dependecies: sql`COALESCE(
-            JSON_AGG(
-                CASE 
-                  WHEN ${getDependency.itemDependecyId} IS NOT NULL THEN
-                    JSON_BUILD_OBJECT(
-                      'itemId', ${getDependency.dependentItemId}
-                    )
-                  ELSE NULL
-                END
-            ) FILTER (WHERE ${getDependency.itemDependecyId} IS NOT NULL),
-            '[]'  
-          )`.as('itemDependecies'),
+        dependecies: sql /*sql*/`COALESCE(
+                JSON_AGG(
+                    CASE 
+                      WHEN ${getDependency.itemDependecyId} IS NOT NULL THEN
+                        JSON_BUILD_OBJECT(
+                          'itemId', ${getDependency.dependentItemId}
+                        )
+                      ELSE NULL
+                    END
+                ) FILTER (WHERE ${getDependency.itemDependecyId} IS NOT NULL),
+                '[]'  
+              )`.as('itemDependecies'),
       })
       .from(getItems)
       .innerJoin(
@@ -124,16 +127,20 @@ export async function getItems({
 
     return {
       Items,
-      pagination: {
-        totalRegistro,
-        pagina: Math.floor(offset / limit) + 1,
-        pagTotal,
-        limit,
-        offset,
-      },
+      totalRegistro,
     }
   } catch (error) {
     console.error('Database query error:', error)
     throw new Error('Failed to fetch items from the database')
+  }
+}
+
+export async function insertItemIntoDB(itemData: PostItemsBody) {
+  try {
+    const result = await db.insert(item).values(itemData).returning()
+    return result[0]
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to insert items into the database')
   }
 }

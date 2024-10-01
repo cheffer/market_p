@@ -5,7 +5,6 @@ import {
   craft,
   creature,
   creatureDrop,
-  favorite,
   item,
   itemDependency,
   itemValue,
