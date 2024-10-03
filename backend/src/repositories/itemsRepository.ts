@@ -1,10 +1,12 @@
 import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
-import type { postItemsQuerySchema } from '../schemas/itemsSchemas'
-import type { z } from 'zod'
-
-type PostItemsBody = z.infer<typeof postItemsQuerySchema>
+import type {
+  DeleteItemsParams,
+  PostItemsBody,
+  PutItemsBody,
+  PutItemsParams,
+} from '../schemas/types'
 
 interface GetItemsQuery {
   name?: string
@@ -14,6 +16,7 @@ interface GetItemsQuery {
   offset?: number
 }
 
+// Consulta de items
 export async function getItemsFromDB(
   filters: GetItemsQuery,
   limit: number,
@@ -28,6 +31,10 @@ export async function getItemsFromDB(
           categoryId: item.categoryId,
           howToObtain: item.howToObtain,
           npcValue: item.npcValue,
+          description: item.description,
+          favorite: item.favorite,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
         })
         .from(item)
         .where(
@@ -97,6 +104,10 @@ export async function getItemsFromDB(
             )`.as('category'),
         npcValue: getItems.npcValue,
         howToObtain: getItems.howToObtain,
+        description: getItems.description,
+        favorite: getItems.favorite,
+        createdAt: sql /*sql*/`DATE(${getItems.createdAt})`.as('createdAt'),
+        updatedAt: sql /*sql*/`DATE(${getItems.updatedAt})`.as('updatedAt'),
         dependecies: sql /*sql*/`COALESCE(
                 JSON_AGG(
                     CASE 
@@ -122,7 +133,11 @@ export async function getItemsFromDB(
         getCategories.categoryId,
         getCategories.name,
         getItems.npcValue,
-        getItems.howToObtain
+        getItems.howToObtain,
+        getItems.description,
+        getItems.favorite,
+        sql /*sql*/`DATE(${getItems.createdAt})`,
+        sql /*sql*/`DATE(${getItems.updatedAt})`
       )
 
     return {
@@ -135,12 +150,64 @@ export async function getItemsFromDB(
   }
 }
 
+// Criação de items
 export async function insertItemIntoDB(itemData: PostItemsBody) {
   try {
-    const result = await db.insert(item).values(itemData).returning()
-    return result[0]
+    const resultInsert = await db.insert(item).values(itemData).returning()
+    const idInsert = {
+      name: resultInsert[0].name,
+    }
+    const result = await getItemsFromDB(idInsert, 1, 0)
+    return { result }
   } catch (error) {
     console.error('Database query error:', error)
     throw new Error('Failed to insert items into the database')
+  }
+}
+
+// Atualização de items
+export async function updateItemSetDB(
+  itemData: PutItemsBody,
+  itemParam: PutItemsParams
+) {
+  try {
+    const result = await db
+      .update(item)
+      .set({
+        name: itemData.name,
+        description: itemData.description,
+        categoryId: itemData.categoryId,
+        howToObtain: itemData.howToObtain,
+        favorite:
+          itemData.favorite === 'true'
+            ? true
+            : itemData.favorite === 'false'
+              ? false
+              : undefined,
+        npcValue: itemData.npcValue
+          ? Number.parseFloat(itemData.npcValue).toString()
+          : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(item.itemId, itemParam.itemId))
+      .returning()
+    return { result }
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to update items in the database')
+  }
+}
+
+// Delete de items
+export async function deleteItemsInDB(itemParam: DeleteItemsParams) {
+  try {
+    const result = await db
+      .delete(item)
+      .where(eq(item.itemId, itemParam.itemId))
+      .returning()
+    return result
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to delete items in the database')
   }
 }
