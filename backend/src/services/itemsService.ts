@@ -1,14 +1,19 @@
 import {
+  deleteDependenciesItemsInDB,
   deleteItemsInDB,
   getItemsFromDB,
+  insertDependenciesItemsIntoDB,
   insertItemIntoDB,
   updateItemSetDB,
+  updateItemsFavoriteSetDB,
 } from '../repositories/itemsRepository'
 import type {
-  DeleteItemsParams,
+  DependenciesItemsBody,
+  DependenciesItemsQuery,
+  FavoriteItemsBody,
+  ItemsParams,
   PostItemsBody,
   PutItemsBody,
-  PutItemsParams,
 } from '../schemas/types'
 
 interface GetItemsQuery {
@@ -51,12 +56,6 @@ export async function getItemsService(
 
 // Funções lógicas de post Items
 export async function postItemsService(itemData: PostItemsBody) {
-  // Verificar se já existe um item com o mesmo nome
-  const existingItem = await getItemsFromDB({ name: itemData.name }, 1, 0)
-  if (existingItem.Items.length > 0) {
-    // Lança um erro se já existe um item com o mesmo nome
-    throw new Error('An item with this name already exists.')
-  }
   try {
     const resultItem = await insertItemIntoDB(itemData)
     return { resultItem }
@@ -69,7 +68,7 @@ export async function postItemsService(itemData: PostItemsBody) {
 // Funções lógicas de put Items
 export async function putItemsService(
   itemData: PutItemsBody,
-  itemParam: PutItemsParams
+  itemParam: ItemsParams
 ) {
   try {
     const resultItem = await updateItemSetDB(itemData, itemParam)
@@ -81,10 +80,57 @@ export async function putItemsService(
 }
 
 // Funções lógicas de delete Items
-export async function deleteItemsService(itemParam: DeleteItemsParams) {
+export async function deleteItemsService(itemParam: ItemsParams) {
   try {
     const resultItem = await deleteItemsInDB(itemParam)
     return resultItem
+  } catch (error) {
+    console.error('Error in the item deletion service:', error)
+    throw new Error('Failed to delete item from database')
+  }
+}
+
+// Funções lógicas de post favorite
+export async function postItemsFavoriteService(
+  itemParam: ItemsParams,
+  favoriteItemBody: FavoriteItemsBody
+) {
+  try {
+    const resultItem = await updateItemsFavoriteSetDB(
+      itemParam,
+      favoriteItemBody
+    )
+    return resultItem
+  } catch (error) {
+    console.error('Error in favorite item insertion service:', error)
+    throw new Error('Failed to add item as favorite to database')
+  }
+}
+
+//Funções lógicas de post dependencies items
+export async function postDependenciesItemsService(
+  itemParam: ItemsParams,
+  dependeciesItemsBody: DependenciesItemsBody
+) {
+  try {
+    const result = await insertDependenciesItemsIntoDB(
+      itemParam,
+      dependeciesItemsBody
+    )
+    return result
+  } catch (error) {
+    console.error('Error in the dependent item insertion service:', error)
+    throw new Error('Failed to add dependent item to database')
+  }
+}
+
+export async function deleteDepentenciesItemsService(
+  itemParam: ItemsParams,
+  itemData: DependenciesItemsQuery
+) {
+  try {
+    const result = await deleteDependenciesItemsInDB(itemParam, itemData)
+    return { result }
   } catch (error) {
     console.error('Error in the item deletion service:', error)
     throw new Error('Failed to delete item from database')

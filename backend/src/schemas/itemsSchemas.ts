@@ -44,11 +44,24 @@ export const putItemsQuerySchemaBody = z.object({
       message: 'npcValue must be a valid decimal string.',
     }),
 })
-export const putItemsQuerySchemaParams = z.object({
+
+// Schema para params itemId
+export const itemsQuerySchemaParams = z.object({
   itemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 
-// Schema para deletar itens (DELETE /items/:{itemId})
-export const deleteItemsQuerySchemaParams = z.object({
-  itemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
+// Schema para favorite Items
+export const favoriteItemsQuerySchemaBody = z.object({
+  favorite: z.boolean(),
+})
+
+// Schema para items dependency
+export const dependeciesItemsQuerySchemaBody = z.object({
+  dependentItemId: z
+    .string()
+    .min(1, { message: 'dependent itemId cannot be empty.' }),
+  quantity: z.number().min(1, { message: 'quantity cannot be empty.' }),
+})
+export const dependeciesItemsQuerySchemaQuery = z.object({
+  dependentItemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })

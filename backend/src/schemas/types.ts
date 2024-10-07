@@ -3,12 +3,18 @@ import type {
   getItemsQuerySchema,
   postItemsQuerySchema,
   putItemsQuerySchemaBody,
-  putItemsQuerySchemaParams,
-  deleteItemsQuerySchemaParams,
+  itemsQuerySchemaParams,
+  favoriteItemsQuerySchemaBody,
+  dependeciesItemsQuerySchemaBody,
+  dependeciesItemsQuerySchema,
 } from './itemsSchemas'
 
 export type GetItemsQuery = z.infer<typeof getItemsQuerySchema>
 export type PostItemsBody = z.infer<typeof postItemsQuerySchema>
 export type PutItemsBody = z.infer<typeof putItemsQuerySchemaBody>
-export type PutItemsParams = z.infer<typeof putItemsQuerySchemaParams>
-export type DeleteItemsParams = z.infer<typeof deleteItemsQuerySchemaParams>
+export type ItemsParams = z.infer<typeof itemsQuerySchemaParams>
+export type FavoriteItemsBody = z.infer<typeof favoriteItemsQuerySchemaBody>
+export type DependenciesItemsBody = z.infer<
+  typeof dependeciesItemsQuerySchemaBody
+>
+export type DependenciesItemsQuery = z.infer<typeof dependeciesItemsQuerySchema>

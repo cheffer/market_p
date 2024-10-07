@@ -1,23 +1,30 @@
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 import {
+  deleteDepentenciesItemsService,
   deleteItemsService,
   getItemsService,
+  postDependenciesItemsService,
+  postItemsFavoriteService,
   postItemsService,
   putItemsService,
 } from '../services/itemsService'
 import {
-  deleteItemsQuerySchemaParams,
+  dependeciesItemsQuerySchema,
+  dependeciesItemsQuerySchemaBody,
+  favoriteItemsQuerySchemaBody,
   getItemsQuerySchema,
+  itemsQuerySchemaParams,
   postItemsQuerySchema,
   putItemsQuerySchemaBody,
-  putItemsQuerySchemaParams,
 } from '../schemas/itemsSchemas'
 import type {
-  DeleteItemsParams,
+  DependenciesItemsBody,
+  DependenciesItemsQuery,
+  FavoriteItemsBody,
   GetItemsQuery,
+  ItemsParams,
   PostItemsBody,
   PutItemsBody,
-  PutItemsParams,
 } from '../schemas/types'
 
 export const itemsController: FastifyPluginAsync = async app => {
@@ -59,7 +66,7 @@ export const itemsController: FastifyPluginAsync = async app => {
           .send({ error: 'Error when searching for items', details: message })
         reply.status(500).send({
           error: 'Internal Server Error',
-          details: (error as Error).message,
+          details: message,
         })
       }
     }
@@ -93,7 +100,7 @@ export const itemsController: FastifyPluginAsync = async app => {
         reply
           .status(400)
           .send({ error: 'Error inserting item', details: message })
-        reply.status(400).send({
+        reply.status(500).send({
           error: 'Error inserting item',
           details: (error as Error).message,
         })
@@ -107,11 +114,11 @@ export const itemsController: FastifyPluginAsync = async app => {
     {
       schema: {
         body: putItemsQuerySchemaBody,
-        params: putItemsQuerySchemaParams,
+        params: itemsQuerySchemaParams,
       },
     },
     async (
-      request: FastifyRequest<{ Body: PutItemsBody; Params: PutItemsParams }>,
+      request: FastifyRequest<{ Body: PutItemsBody; Params: ItemsParams }>,
       reply: FastifyReply
     ) => {
       const itemData = request.body
@@ -142,9 +149,9 @@ export const itemsController: FastifyPluginAsync = async app => {
   // Rota para DELETE /items/:{itemID}
   app.delete(
     '/items/:itemId',
-    { schema: { params: deleteItemsQuerySchemaParams } },
+    { schema: { params: itemsQuerySchemaParams } },
     async (
-      request: FastifyRequest<{ Params: DeleteItemsParams }>,
+      request: FastifyRequest<{ Params: ItemsParams }>,
       reply: FastifyReply
     ) => {
       const itemParam = request.params
@@ -165,6 +172,130 @@ export const itemsController: FastifyPluginAsync = async app => {
         console.error(error)
         const message = (error as Error).message || 'Unknown error'
         reply.status(400).send({ error: 'Error delete item', details: message })
+      }
+    }
+  )
+
+  // Rota para POST favorito /items/:{itemID}/favorite
+  app.post(
+    '/items/:itemId/favorite',
+    {
+      schema: {
+        params: itemsQuerySchemaParams,
+        body: favoriteItemsQuerySchemaBody,
+      },
+    },
+    async (
+      request: FastifyRequest<{ Params: ItemsParams; Body: FavoriteItemsBody }>,
+      reply: FastifyReply
+    ) => {
+      const itemParams = request.params
+      const favoriteItemBody = request.body
+      try {
+        const result = await postItemsFavoriteService(
+          itemParams,
+          favoriteItemBody
+        )
+        if (result.result.length > 0) {
+          reply.status(200).send(result.result)
+        } else {
+          const message = 'Item does not exist or was not reported'
+          reply
+            .status(404)
+            .send({ error: 'Unable to favorite', details: message })
+        }
+      } catch (error) {
+        {
+          console.error(error)
+          const message = (error as Error).message || 'Unknown error'
+          reply
+            .status(400)
+            .send({ error: 'Error inserting item', details: message })
+          reply.status(500).send({
+            error: 'Error inserting item',
+            details: (error as Error).message,
+          })
+        }
+      }
+    }
+  )
+
+  // Rota para POST dependencies /items/:{itemID}/dependencies
+  app.post(
+    '/items/:itemId/dependencies',
+    {
+      schema: {
+        params: itemsQuerySchemaParams,
+        body: dependeciesItemsQuerySchemaBody,
+      },
+    },
+    async (
+      request: FastifyRequest<{
+        Params: ItemsParams
+        Body: DependenciesItemsBody
+      }>,
+      reply: FastifyReply
+    ) => {
+      const itemParams = request.params
+      const dependeciesItemsBody = request.body
+      try {
+        const result = await postDependenciesItemsService(
+          itemParams,
+          dependeciesItemsBody
+        )
+        reply.status(201).send(result)
+      } catch (error) {
+        {
+          console.error(error)
+          const message = (error as Error).message || 'Unknown error'
+          reply
+            .status(400)
+            .send({ error: 'Error inserting item', details: message })
+          reply.status(500).send({
+            error: 'Error inserting item',
+            details: (error as Error).message,
+          })
+        }
+      }
+    }
+  )
+
+  // Rota para DELETE dependencies /items/:{itemID}/dependencies
+  app.delete(
+    '/items/:itemId/dependencies',
+    {
+      schema: {
+        params: itemsQuerySchemaParams,
+        querystring: dependeciesItemsQuerySchema,
+      },
+    },
+    async (
+      request: FastifyRequest<{
+        Params: ItemsParams
+        Querystring: DependenciesItemsQuery
+      }>,
+      reply: FastifyReply
+    ) => {
+      const itemParam = request.params
+      const itemData = request.query
+      try {
+        const result = await deleteDepentenciesItemsService(itemParam, itemData)
+        if (result.result.length > 0) {
+          reply
+            .status(200)
+            .send({ message: `Item '${result}' has been deleted.` })
+        } else {
+          const message = 'Item does not exist or was not reported'
+          reply
+            .status(404)
+            .send({ error: 'Unable to delete', details: message })
+        }
+      } catch (error) {
+        console.error(error)
+        const message = (error as Error).message || 'Unknown error'
+        reply
+          .status(400)
+          .send({ error: 'Error delete dependent item', details: message })
       }
     }
   )

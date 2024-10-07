@@ -2,10 +2,12 @@ import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
 import type {
-  DeleteItemsParams,
+  DependenciesItemsBody,
+  DependenciesItemsQuery,
+  FavoriteItemsBody,
+  ItemsParams,
   PostItemsBody,
   PutItemsBody,
-  PutItemsParams,
 } from '../schemas/types'
 
 interface GetItemsQuery {
@@ -153,7 +155,17 @@ export async function getItemsFromDB(
 // Criação de items
 export async function insertItemIntoDB(itemData: PostItemsBody) {
   try {
-    const resultInsert = await db.insert(item).values(itemData).returning()
+    const resultInsert = await db
+      .insert(item)
+      .values({
+        name: itemData.name,
+        description: itemData.description,
+        categoryId: itemData.categoryId,
+        howToObtain: itemData.howToObtain,
+        favorite: itemData.favorite,
+        npcValue: itemData.npcValue,
+      })
+      .returning()
     const idInsert = {
       name: resultInsert[0].name,
     }
@@ -168,7 +180,7 @@ export async function insertItemIntoDB(itemData: PostItemsBody) {
 // Atualização de items
 export async function updateItemSetDB(
   itemData: PutItemsBody,
-  itemParam: PutItemsParams
+  itemParam: ItemsParams
 ) {
   try {
     const result = await db
@@ -199,11 +211,73 @@ export async function updateItemSetDB(
 }
 
 // Delete de items
-export async function deleteItemsInDB(itemParam: DeleteItemsParams) {
+export async function deleteItemsInDB(itemParam: ItemsParams) {
   try {
     const result = await db
       .delete(item)
       .where(eq(item.itemId, itemParam.itemId))
+      .returning()
+    return result
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to delete items in the database')
+  }
+}
+
+// Update items favorite
+export async function updateItemsFavoriteSetDB(
+  itemParam: ItemsParams,
+  favoriteItemBody: FavoriteItemsBody
+) {
+  try {
+    const result = await db
+      .update(item)
+      .set({ favorite: favoriteItemBody.favorite, updatedAt: new Date() })
+      .where(eq(item.itemId, itemParam.itemId))
+      .returning()
+    return { result }
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to update favorite item from database')
+  }
+}
+
+// Insert dependencies items
+export async function insertDependenciesItemsIntoDB(
+  itemParam: ItemsParams,
+  dependeciesItemsBody: DependenciesItemsBody
+) {
+  try {
+    const result = await db
+      .insert(itemDependency)
+      .values({
+        itemId: itemParam.itemId,
+        dependentItemId: dependeciesItemsBody.dependentItemId,
+        quantity: dependeciesItemsBody.quantity,
+        updatedAt: new Date(),
+      })
+      .returning()
+    return { result }
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to insert database dependent item')
+  }
+}
+
+// Delete dependencies items
+export async function deleteDependenciesItemsInDB(
+  itemParam: ItemsParams,
+  itemData: DependenciesItemsQuery
+) {
+  try {
+    const result = await db
+      .delete(itemDependency)
+      .where(
+        and(
+          eq(itemDependency.itemId, itemParam.itemId),
+          eq(itemDependency.dependentItemId, itemData.dependentItemId)
+        )
+      )
       .returning()
     return result
   } catch (error) {
