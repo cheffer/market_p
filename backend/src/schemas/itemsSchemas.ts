@@ -11,7 +11,7 @@ export const getItemsQuerySchema = z.object({
 })
 
 // Schema para criação de itens (POST /items)
-export const postItemsQuerySchema = z.object({
+export const postItemsBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
     .min(1, { message: 'The name cannot be empty.' }),
@@ -26,7 +26,7 @@ export const postItemsQuerySchema = z.object({
 })
 
 // Schema para atualização de itens (PUT /items/:{itemId})
-export const putItemsQuerySchemaBody = z.object({
+export const putItemsBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
     .min(1, { message: 'The name cannot be empty.' }),
@@ -46,22 +46,22 @@ export const putItemsQuerySchemaBody = z.object({
 })
 
 // Schema para params itemId
-export const itemsQuerySchemaParams = z.object({
+export const itemsParamsSchema = z.object({
   itemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 
 // Schema para favorite Items
-export const favoriteItemsQuerySchemaBody = z.object({
+export const favoriteItemsBodySchema = z.object({
   favorite: z.boolean(),
 })
 
 // Schema para items dependency
-export const dependeciesItemsQuerySchemaBody = z.object({
+export const dependeciesItemsBodySchema = z.object({
   dependentItemId: z
     .string()
     .min(1, { message: 'dependent itemId cannot be empty.' }),
   quantity: z.number().min(1, { message: 'quantity cannot be empty.' }),
 })
-export const dependeciesItemsQuerySchemaQuery = z.object({
+export const dependeciesItemsQuerySchema = z.object({
   dependentItemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })

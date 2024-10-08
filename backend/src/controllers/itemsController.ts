@@ -10,12 +10,12 @@ import {
 } from '../services/itemsService'
 import {
   dependeciesItemsQuerySchema,
-  dependeciesItemsQuerySchemaBody,
-  favoriteItemsQuerySchemaBody,
+  dependeciesItemsBodySchema,
+  favoriteItemsBodySchema,
   getItemsQuerySchema,
-  itemsQuerySchemaParams,
-  postItemsQuerySchema,
-  putItemsQuerySchemaBody,
+  itemsParamsSchema,
+  postItemsBodySchema,
+  putItemsBodySchema,
 } from '../schemas/itemsSchemas'
 import type {
   DependenciesItemsBody,
@@ -75,7 +75,7 @@ export const itemsController: FastifyPluginAsync = async app => {
   // Rota para POST /items
   app.post(
     '/items',
-    { schema: { body: postItemsQuerySchema } },
+    { schema: { body: postItemsBodySchema } },
     async (
       request: FastifyRequest<{ Body: PostItemsBody }>,
       reply: FastifyReply
@@ -113,8 +113,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     '/items/:itemId',
     {
       schema: {
-        body: putItemsQuerySchemaBody,
-        params: itemsQuerySchemaParams,
+        body: putItemsBodySchema,
+        params: itemsParamsSchema,
       },
     },
     async (
@@ -149,7 +149,7 @@ export const itemsController: FastifyPluginAsync = async app => {
   // Rota para DELETE /items/:{itemID}
   app.delete(
     '/items/:itemId',
-    { schema: { params: itemsQuerySchemaParams } },
+    { schema: { params: itemsParamsSchema } },
     async (
       request: FastifyRequest<{ Params: ItemsParams }>,
       reply: FastifyReply
@@ -181,8 +181,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     '/items/:itemId/favorite',
     {
       schema: {
-        params: itemsQuerySchemaParams,
-        body: favoriteItemsQuerySchemaBody,
+        params: itemsParamsSchema,
+        body: favoriteItemsBodySchema,
       },
     },
     async (
@@ -225,8 +225,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     '/items/:itemId/dependencies',
     {
       schema: {
-        params: itemsQuerySchemaParams,
-        body: dependeciesItemsQuerySchemaBody,
+        params: itemsParamsSchema,
+        body: dependeciesItemsBodySchema,
       },
     },
     async (
@@ -265,7 +265,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     '/items/:itemId/dependencies',
     {
       schema: {
-        params: itemsQuerySchemaParams,
+        params: itemsParamsSchema,
         querystring: dependeciesItemsQuerySchema,
       },
     },

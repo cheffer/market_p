@@ -73,7 +73,6 @@ export async function getItemsFromDB(
       )
 
     const totalRegistro = Number(totalCount[0]?.count) || 0
-    const pagTotal = Math.ceil(totalRegistro / limit) // Total de páginas
 
     const getCategories = db.$with('get_categories').as(
       db
@@ -115,7 +114,8 @@ export async function getItemsFromDB(
                     CASE 
                       WHEN ${getDependency.itemDependecyId} IS NOT NULL THEN
                         JSON_BUILD_OBJECT(
-                          'itemId', ${getDependency.dependentItemId}
+                          'dependentItemId', ${getDependency.dependentItemId},
+                          'quantity', ${getDependency.quantity}
                         )
                       ELSE NULL
                     END
