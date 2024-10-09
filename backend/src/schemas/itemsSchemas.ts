@@ -50,6 +50,11 @@ export const itemsParamsSchema = z.object({
   itemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 
+// Schema para itemName
+export const itemNameSchema = z.object({
+  itemName: z.string().min(1, { message: 'itemName cannot be empty.' }),
+})
+
 // Schema para favorite Items
 export const favoriteItemsBodySchema = z.object({
   favorite: z.boolean(),
@@ -64,4 +69,10 @@ export const dependeciesItemsBodySchema = z.object({
 })
 export const dependeciesItemsQuerySchema = z.object({
   dependentItemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
+})
+
+// Schema para consultas na items
+export const countItemsSchema = z.object({
+  itemId: z.string().optional(),
+  itemName: z.string().optional(),
 })

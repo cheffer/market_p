@@ -4,7 +4,7 @@ import {
   deleteItemsService,
   getItemsService,
   postDependenciesItemsService,
-  postItemsFavoriteService,
+  putItemsFavoriteService,
   postItemsService,
   putItemsService,
 } from '../services/itemsService'
@@ -82,18 +82,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     ) => {
       const itemData = request.body
       try {
-        const itemFilter = { name: itemData.name }
-        const result = await getItemsService(itemFilter, 1, 0)
-        if (result.items.length > 0) {
-          const message = 'An item with that name already exists'
-          reply
-            .status(409)
-            .send({ error: 'Unable to create', details: message })
-        } else {
-          const resultInsert = (await postItemsService(itemData)).resultItem
-            .result.Items
-          reply.status(201).send(resultInsert)
-        }
+        const resultInsert = await postItemsService(itemData)
+        reply.status(201).send(resultInsert)
       } catch (error) {
         console.error(error)
         const message = (error as Error).message || 'Unknown error'
@@ -125,18 +115,8 @@ export const itemsController: FastifyPluginAsync = async app => {
       const itemParam = request.params
 
       try {
-        const result = (await putItemsService(itemData, itemParam)).result
-        if (result.length > 0) {
-          const itemFilter = { name: itemData.name }
-          const resultUpdate = await getItemsService(itemFilter, 1, 0)
-
-          reply.status(200).send(resultUpdate)
-        } else {
-          const message = 'Item does not exist or was not reported'
-          reply
-            .status(404)
-            .send({ error: 'Unable to update', details: message })
-        }
+        const result = await putItemsService(itemData, itemParam)
+        reply.status(200).send(result)
       } catch (error) {
         reply.status(400).send({
           error: 'Error updating item',
@@ -156,18 +136,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     ) => {
       const itemParam = request.params
       try {
-        const result = await deleteItemsService(itemParam)
-        if (result.length > 0) {
-          //reply.status(204).send()
-          reply
-            .status(200)
-            .send({ message: `Item '${result[0].name}' has been deleted.` })
-        } else {
-          const message = 'Item does not exist or was not reported'
-          reply
-            .status(404)
-            .send({ error: 'Unable to delete', details: message })
-        }
+        await deleteItemsService(itemParam)
+        reply.status(204).send()
       } catch (error) {
         console.error(error)
         const message = (error as Error).message || 'Unknown error'
@@ -176,8 +146,8 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para POST favorito /items/:{itemID}/favorite
-  app.post(
+  // Rota para PUT favorito /items/:{itemID}/favorite
+  app.put(
     '/items/:itemId/favorite',
     {
       schema: {
@@ -192,18 +162,11 @@ export const itemsController: FastifyPluginAsync = async app => {
       const itemParams = request.params
       const favoriteItemBody = request.body
       try {
-        const result = await postItemsFavoriteService(
+        const result = await putItemsFavoriteService(
           itemParams,
           favoriteItemBody
         )
-        if (result.result.length > 0) {
-          reply.status(200).send(result.result)
-        } else {
-          const message = 'Item does not exist or was not reported'
-          reply
-            .status(404)
-            .send({ error: 'Unable to favorite', details: message })
-        }
+        reply.status(200).send(result.result)
       } catch (error) {
         {
           console.error(error)
@@ -280,16 +243,9 @@ export const itemsController: FastifyPluginAsync = async app => {
       const itemData = request.query
       try {
         const result = await deleteDepentenciesItemsService(itemParam, itemData)
-        if (result.result.length > 0) {
-          reply
-            .status(200)
-            .send({ message: `Item '${result}' has been deleted.` })
-        } else {
-          const message = 'Item does not exist or was not reported'
-          reply
-            .status(404)
-            .send({ error: 'Unable to delete', details: message })
-        }
+        reply
+          .status(200)
+          .send({ message: `Item '${result}' has been deleted.` })
       } catch (error) {
         console.error(error)
         const message = (error as Error).message || 'Unknown error'

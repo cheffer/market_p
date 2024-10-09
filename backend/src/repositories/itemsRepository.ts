@@ -2,6 +2,7 @@ import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
 import type {
+  CountItems,
   DependenciesItemsBody,
   DependenciesItemsQuery,
   FavoriteItemsBody,
@@ -16,6 +17,58 @@ interface GetItemsQuery {
   favorite?: boolean
   limit?: number
   offset?: number
+}
+
+// Consultas de validação
+// Items
+export async function getCountItems(itemsData: CountItems) {
+  try {
+    const query = db
+      .select({
+        count: sql /*sql*/`COUNT(*)`.as('count'),
+      })
+      .from(item)
+
+    // By name
+    if (itemsData.itemName) {
+      query.where(eq(item.name, itemsData.itemName))
+    }
+    // By id
+    if (itemsData.itemId) {
+      query.where(eq(item.itemId, itemsData.itemId))
+    }
+    const resultCountItems = await query
+    const result = Number(resultCountItems[0].count)
+    return result
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to fetch items from the database')
+  }
+}
+
+// Item Depedente
+export async function getCountDependentItem(
+  itemParam: ItemsParams,
+  dependeciesItems: DependenciesItemsQuery
+) {
+  try {
+    const resultCount = await db
+      .select({
+        count: sql /*sql*/`COUNT(*)`.as('count'),
+      })
+      .from(itemDependency)
+      .where(
+        and(
+          eq(itemDependency.itemId, itemParam.itemId),
+          eq(itemDependency.dependentItemId, dependeciesItems.dependentItemId)
+        )
+      )
+    const result = Number(resultCount[0].count)
+    return result
+  } catch (error) {
+    console.error('Database query error:', error)
+    throw new Error('Failed to fetch items from the database')
+  }
 }
 
 // Consulta de items
@@ -257,7 +310,7 @@ export async function insertDependenciesItemsIntoDB(
         updatedAt: new Date(),
       })
       .returning()
-    return { result }
+    return result
   } catch (error) {
     console.error('Database query error:', error)
     throw new Error('Failed to insert database dependent item')
