@@ -1,4 +1,9 @@
 import {
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from '../errors/customErrors'
+import {
   deleteDependenciesItemsInDB,
   deleteItemsInDB,
   getCountDependentItem,
@@ -7,7 +12,7 @@ import {
   insertDependenciesItemsIntoDB,
   insertItemIntoDB,
   updateItemSetDB,
-  updateItemsFavoriteSetDB,
+  updateFavoriteItemSetDB,
 } from '../repositories/itemsRepository'
 import type {
   DependenciesItemsBody,
@@ -33,27 +38,20 @@ export async function getItemsService(
   limit: number,
   offset: number
 ) {
-  try {
-    const { Items, totalRegistro } = await getItemsFromDB(
-      filters,
+  const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
+  const fullPage = Math.ceil(totalRecords / limit)
+  if (Items.length === 0) {
+    throw new NotFoundError('The requested resource was not found.')
+  }
+  return {
+    items: Items,
+    pagination: {
+      totalRecords,
+      pagina: Math.floor(offset / limit) + 1,
+      fullPage,
       limit,
-      offset
-    )
-    const pagTotal = Math.ceil(totalRegistro / limit)
-
-    return {
-      items: Items,
-      pagination: {
-        totalRegistro,
-        pagina: Math.floor(offset / limit) + 1,
-        pagTotal,
-        limit,
-        offset,
-      },
-    }
-  } catch (error) {
-    console.error('Error in the item retrieval service:', error)
-    throw new Error('Failed to fetch items from database')
+      offset,
+    },
   }
 }
 
@@ -63,125 +61,103 @@ export async function postItemsService(itemData: PostItemsBody) {
   const itemName = { itemName: itemData.name }
   const resultCount = await getCountItems(itemName)
 
-  try {
-    if (resultCount > 0) {
-      throw new Error('item already exists')
-    }
-    const resultItem = (await insertItemIntoDB(itemData)).result.Items[0]
-    return resultItem
-  } catch (error) {
-    console.error('Error in the item insertion service:', error)
-    throw new Error('Failed to insert item into database')
+  if (resultCount > 0) {
+    throw new ValidationError('item already exists')
   }
+  const resultInsertItem = (await insertItemIntoDB(itemData)).result.Items[0]
+  return resultInsertItem
 }
 
 // Put
 export async function putItemsService(
   itemData: PutItemsBody,
-  itemParam: ItemsParams
+  itemParams: ItemsParams
 ) {
   // Verifica se existe esse item
-  const itemId = { itemId: itemParam.itemId }
-  const resultCount = await getCountItems(itemId)
-  try {
-    if (resultCount === 0) {
-      throw new Error('Item not found')
-    }
-    await updateItemSetDB(itemData, itemParam)
-    const itemName = { name: itemData.name }
-    const resultItems = await getItemsFromDB(itemName, 1, 0)
-
-    return resultItems.Items[0]
-  } catch (error) {
-    console.error('Error in item update service:', error)
-    throw new Error('Failed to update item in database')
+  const itemId = { itemId: itemParams.itemId }
+  const itemName = { name: itemData.name }
+  /*const itemIdentify = { itemId: itemParams.itemId, itemName: itemData.name }*/
+  const resultCountItem = await getCountItems(itemId)
+  if (resultCountItem === 0) {
+    throw new NotFoundError('Item not found')
   }
+  //ajustar verificação
+  /*const resultIdentifyItem = await getCountItems(itemIdentify)
+  if (resultIdentifyItem === 0) {
+    throw new ConflictError('An item with that name already exists')
+  }*/
+  await updateItemSetDB(itemData, itemParams)
+  const resultGetItems = await getItemsFromDB(itemName, 1, 0)
+
+  return resultGetItems.Items[0]
 }
 
 // Delete
-export async function deleteItemsService(itemParam: ItemsParams) {
+export async function deleteItemsService(itemParams: ItemsParams) {
   // Verifica existem esse item
-  const itemId = { itemId: itemParam.itemId }
-  const resultCount = await getCountItems(itemId)
+  const itemId = { itemId: itemParams.itemId }
+  const resultCountItem = await getCountItems(itemId)
 
-  try {
-    if (resultCount === 0) {
-      throw new Error('Item not found')
-    }
-    await deleteItemsInDB(itemParam)
-  } catch (error) {
-    console.error('Error in the item deletion service:', error)
-    throw new Error('Failed to delete item from database')
+  if (resultCountItem === 0) {
+    throw new NotFoundError('Item not found')
   }
+  await deleteItemsInDB(itemParams)
 }
 
 // Funções lógicas de favorite
 // Put
-export async function putItemsFavoriteService(
-  itemParam: ItemsParams,
+export async function putFavoriteItemService(
+  itemParams: ItemsParams,
   favoriteItemBody: FavoriteItemsBody
 ) {
   // Verifica existe esse item
-  const itemId = { itemId: itemParam.itemId }
-  const resultCount = await getCountItems(itemId)
-  try {
-    if (resultCount === 0) {
-      throw new Error('Item not found')
-    }
-    const resultItem = await updateItemsFavoriteSetDB(
-      itemParam,
-      favoriteItemBody
-    )
-    return resultItem
-  } catch (error) {
-    console.error('Error in favorite item insertion service:', error)
-    throw new Error('Failed to add item as favorite to database')
+  const itemId = { itemId: itemParams.itemId }
+  const resultCountItem = await getCountItems(itemId)
+  if (resultCountItem === 0) {
+    throw new NotFoundError('Item not found')
   }
+  const resultUpdateItem = await updateFavoriteItemSetDB(
+    itemParams,
+    favoriteItemBody
+  )
+  return resultUpdateItem
 }
 
 //Funções lógicas de dependencies items
 // Post
 export async function postDependenciesItemsService(
-  itemParam: ItemsParams,
+  itemParams: ItemsParams,
   dependeciesItemsBody: DependenciesItemsBody
 ) {
-  if (itemParam.itemId === dependeciesItemsBody.dependentItemId) {
-    throw new Error('The item cannot be dependent on itself')
+  if (itemParams.itemId === dependeciesItemsBody.dependentItemId) {
+    throw new ConflictError('The item cannot be dependent on itself')
   }
-  const resultCount = await getCountDependentItem(
-    itemParam,
+  const resultCountDependentItem = await getCountDependentItem(
+    itemParams,
     dependeciesItemsBody
   )
-  try {
-    if (resultCount > 0) {
-      throw new Error('item already exists')
-    }
-    const result = await insertDependenciesItemsIntoDB(
-      itemParam,
-      dependeciesItemsBody
-    )
-    return result[0]
-  } catch (error) {
-    console.error('Error in the dependent item insertion service:', error)
-    throw new Error('Failed to add dependent item to database')
+  if (resultCountDependentItem > 0) {
+    throw new ValidationError('item already exists')
   }
+  const result = await insertDependenciesItemsIntoDB(
+    itemParams,
+    dependeciesItemsBody
+  )
+  return result[0]
 }
 
 // Delete
 export async function deleteDepentenciesItemsService(
-  itemParam: ItemsParams,
+  itemParams: ItemsParams,
   itemData: DependenciesItemsQuery
 ) {
   const dependentItemId = { dependentItemId: itemData.dependentItemId }
-  const resultCount = await getCountDependentItem(itemParam, dependentItemId)
-  try {
-    if (resultCount === 0) {
-      throw new Error('Item not found')
-    }
-    const result = await deleteDependenciesItemsInDB(itemParam, itemData)
-    return { result }
-  } catch (error) {
-    console.error('Error in the item deletion service:', error)
-    throw new Error('Failed to delete item from database')
+  const resultCountDependentItem = await getCountDependentItem(
+    itemParams,
+    dependentItemId
+  )
+  if (resultCountDependentItem === 0) {
+    throw new NotFoundError('Item not found')
   }
+  await deleteDependenciesItemsInDB(itemParams, itemData)
 }
