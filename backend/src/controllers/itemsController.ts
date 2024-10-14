@@ -4,7 +4,7 @@ import {
   deleteItemsService,
   getItemsService,
   postDependenciesItemsService,
-  putItemsFavoriteService,
+  putFavoriteItemService,
   postItemsService,
   putItemsService,
 } from '../services/itemsService'
@@ -36,11 +36,10 @@ export const itemsController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Querystring: GetItemsQuery }>,
       reply: FastifyReply
     ) => {
+      const { name, categoryId, favorite, limit, offset } = request.query
+      const favoriteBoolean =
+        favorite === 'true' ? true : favorite === 'false' ? false : undefined
       try {
-        const { name, categoryId, favorite, limit, offset } = request.query
-        const favoriteBoolean =
-          favorite === 'true' ? true : favorite === 'false' ? false : undefined
-
         const { items, pagination } = await getItemsService(
           {
             name,
@@ -50,24 +49,14 @@ export const itemsController: FastifyPluginAsync = async app => {
           limit,
           offset
         )
-        if (items.length > 0) {
-          reply.status(200).send({ items, pagination })
-        } else {
-          const message = 'The requested resource was not found.'
-          reply
-            .status(404)
-            .send({ error: 'Unable to search', details: message })
-        }
+        reply.status(200).send({ items, pagination })
       } catch (error) {
-        console.error(error)
-        const message = (error as Error).message || 'Unknown error'
-        reply
-          .status(400)
-          .send({ error: 'Error when searching for items', details: message })
-        reply.status(500).send({
-          error: 'Internal Server Error',
-          details: message,
-        })
+        // Logando erro
+        request.log.error(
+          `Error when searching for item with name: ${name}`,
+          error
+        )
+        throw error // O middleware de erros lidará com o erro
       }
     }
   )
@@ -82,18 +71,11 @@ export const itemsController: FastifyPluginAsync = async app => {
     ) => {
       const itemData = request.body
       try {
-        const resultInsert = await postItemsService(itemData)
-        reply.status(201).send(resultInsert)
+        const resultPostItems = await postItemsService(itemData)
+        reply.status(201).send(resultPostItems)
       } catch (error) {
-        console.error(error)
-        const message = (error as Error).message || 'Unknown error'
-        reply
-          .status(400)
-          .send({ error: 'Error inserting item', details: message })
-        reply.status(500).send({
-          error: 'Error inserting item',
-          details: (error as Error).message,
-        })
+        request.log.error('Error creating item', error)
+        throw error
       }
     }
   )
@@ -112,16 +94,16 @@ export const itemsController: FastifyPluginAsync = async app => {
       reply: FastifyReply
     ) => {
       const itemData = request.body
-      const itemParam = request.params
-
+      const itemParams = request.params
       try {
-        const result = await putItemsService(itemData, itemParam)
-        reply.status(200).send(result)
+        const resultPutItems = await putItemsService(itemData, itemParams)
+        reply.status(200).send(resultPutItems)
       } catch (error) {
-        reply.status(400).send({
-          error: 'Error updating item',
-          details: (error as Error).message,
-        })
+        request.log.error(
+          `Error updating item with ID: ${itemParams.itemId}`,
+          error
+        )
+        throw error
       }
     }
   )
@@ -134,14 +116,16 @@ export const itemsController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Params: ItemsParams }>,
       reply: FastifyReply
     ) => {
-      const itemParam = request.params
+      const itemParams = request.params
       try {
-        await deleteItemsService(itemParam)
+        await deleteItemsService(itemParams)
         reply.status(204).send()
       } catch (error) {
-        console.error(error)
-        const message = (error as Error).message || 'Unknown error'
-        reply.status(400).send({ error: 'Error delete item', details: message })
+        request.log.error(
+          `Error deleting item with ID: ${itemParams.itemId}`,
+          error
+        )
+        throw error
       }
     }
   )
@@ -162,23 +146,17 @@ export const itemsController: FastifyPluginAsync = async app => {
       const itemParams = request.params
       const favoriteItemBody = request.body
       try {
-        const result = await putItemsFavoriteService(
+        const resultPutItemsFavorite = await putFavoriteItemService(
           itemParams,
           favoriteItemBody
         )
-        reply.status(200).send(result.result)
+        reply.status(200).send(resultPutItemsFavorite.result)
       } catch (error) {
-        {
-          console.error(error)
-          const message = (error as Error).message || 'Unknown error'
-          reply
-            .status(400)
-            .send({ error: 'Error inserting item', details: message })
-          reply.status(500).send({
-            error: 'Error inserting item',
-            details: (error as Error).message,
-          })
-        }
+        request.log.error(
+          `Error updating favorite item with ID: ${itemParams.itemId}`,
+          error
+        )
+        throw error
       }
     }
   )
@@ -202,23 +180,14 @@ export const itemsController: FastifyPluginAsync = async app => {
       const itemParams = request.params
       const dependeciesItemsBody = request.body
       try {
-        const result = await postDependenciesItemsService(
+        const resultPostDependenciesItems = await postDependenciesItemsService(
           itemParams,
           dependeciesItemsBody
         )
-        reply.status(201).send(result)
+        reply.status(201).send(resultPostDependenciesItems)
       } catch (error) {
-        {
-          console.error(error)
-          const message = (error as Error).message || 'Unknown error'
-          reply
-            .status(400)
-            .send({ error: 'Error inserting item', details: message })
-          reply.status(500).send({
-            error: 'Error inserting item',
-            details: (error as Error).message,
-          })
-        }
+        request.log.error('Error creating dependent item', error)
+        throw error
       }
     }
   )
@@ -239,19 +208,17 @@ export const itemsController: FastifyPluginAsync = async app => {
       }>,
       reply: FastifyReply
     ) => {
-      const itemParam = request.params
+      const itemParams = request.params
       const itemData = request.query
       try {
-        const result = await deleteDepentenciesItemsService(itemParam, itemData)
-        reply
-          .status(200)
-          .send({ message: `Item '${result}' has been deleted.` })
+        await deleteDepentenciesItemsService(itemParams, itemData)
+        reply.status(204).send()
       } catch (error) {
-        console.error(error)
-        const message = (error as Error).message || 'Unknown error'
-        reply
-          .status(400)
-          .send({ error: 'Error delete dependent item', details: message })
+        request.log.error(
+          `Error deleting item with ID: ${itemParams.itemId}`,
+          error
+        )
+        throw error
       }
     }
   )

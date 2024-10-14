@@ -10,6 +10,7 @@ import type {
   PostItemsBody,
   PutItemsBody,
 } from '../schemas/types'
+import { DatabaseError } from '../errors/customErrors'
 
 interface GetItemsQuery {
   name?: string
@@ -28,27 +29,35 @@ export async function getCountItems(itemsData: CountItems) {
         count: sql /*sql*/`COUNT(*)`.as('count'),
       })
       .from(item)
+    const conditions = []
 
-    // By name
+    // Adiciona condição por nome se fornecido
     if (itemsData.itemName) {
-      query.where(eq(item.name, itemsData.itemName))
+      conditions.push(eq(item.name, itemsData.itemName))
     }
-    // By id
+
+    // Adiciona condição por ID se fornecido
     if (itemsData.itemId) {
-      query.where(eq(item.itemId, itemsData.itemId))
+      conditions.push(eq(item.itemId, itemsData.itemId))
     }
+
+    // Se houver condições, aplica ao query
+    if (conditions.length > 0) {
+      query.where(and(...conditions))
+    }
+
     const resultCountItems = await query
     const result = Number(resultCountItems[0].count)
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to fetch items from the database')
+    throw new DatabaseError('Failed to fetch items from the database')
   }
 }
 
 // Item Depedente
 export async function getCountDependentItem(
-  itemParam: ItemsParams,
+  itemParams: ItemsParams,
   dependeciesItems: DependenciesItemsQuery
 ) {
   try {
@@ -59,7 +68,7 @@ export async function getCountDependentItem(
       .from(itemDependency)
       .where(
         and(
-          eq(itemDependency.itemId, itemParam.itemId),
+          eq(itemDependency.itemId, itemParams.itemId),
           eq(itemDependency.dependentItemId, dependeciesItems.dependentItemId)
         )
       )
@@ -67,7 +76,7 @@ export async function getCountDependentItem(
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to fetch items from the database')
+    throw new DatabaseError('Failed to fetch items from the database')
   }
 }
 
@@ -125,7 +134,7 @@ export async function getItemsFromDB(
         )
       )
 
-    const totalRegistro = Number(totalCount[0]?.count) || 0
+    const totalRecords = Number(totalCount[0]?.count) || 0
 
     const getCategories = db.$with('get_categories').as(
       db
@@ -197,11 +206,11 @@ export async function getItemsFromDB(
 
     return {
       Items,
-      totalRegistro,
+      totalRecords,
     }
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to fetch items from the database')
+    throw new DatabaseError('Failed to fetch items from the database')
   }
 }
 
@@ -226,14 +235,14 @@ export async function insertItemIntoDB(itemData: PostItemsBody) {
     return { result }
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to insert items into the database')
+    throw new DatabaseError('Failed to insert items into the database')
   }
 }
 
 // Atualização de items
 export async function updateItemSetDB(
   itemData: PutItemsBody,
-  itemParam: ItemsParams
+  itemParams: ItemsParams
 ) {
   try {
     const result = await db
@@ -254,57 +263,57 @@ export async function updateItemSetDB(
           : null,
         updatedAt: new Date(),
       })
-      .where(eq(item.itemId, itemParam.itemId))
+      .where(eq(item.itemId, itemParams.itemId))
       .returning()
     return { result }
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to update items in the database')
+    throw new DatabaseError('Failed to update items in the database')
   }
 }
 
 // Delete de items
-export async function deleteItemsInDB(itemParam: ItemsParams) {
+export async function deleteItemsInDB(itemParams: ItemsParams) {
   try {
     const result = await db
       .delete(item)
-      .where(eq(item.itemId, itemParam.itemId))
+      .where(eq(item.itemId, itemParams.itemId))
       .returning()
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to delete items in the database')
+    throw new DatabaseError('Failed to delete items in the database')
   }
 }
 
 // Update items favorite
-export async function updateItemsFavoriteSetDB(
-  itemParam: ItemsParams,
+export async function updateFavoriteItemSetDB(
+  itemParams: ItemsParams,
   favoriteItemBody: FavoriteItemsBody
 ) {
   try {
     const result = await db
       .update(item)
       .set({ favorite: favoriteItemBody.favorite, updatedAt: new Date() })
-      .where(eq(item.itemId, itemParam.itemId))
+      .where(eq(item.itemId, itemParams.itemId))
       .returning()
     return { result }
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to update favorite item from database')
+    throw new DatabaseError('Failed to update favorite item from database')
   }
 }
 
 // Insert dependencies items
 export async function insertDependenciesItemsIntoDB(
-  itemParam: ItemsParams,
+  itemParams: ItemsParams,
   dependeciesItemsBody: DependenciesItemsBody
 ) {
   try {
     const result = await db
       .insert(itemDependency)
       .values({
-        itemId: itemParam.itemId,
+        itemId: itemParams.itemId,
         dependentItemId: dependeciesItemsBody.dependentItemId,
         quantity: dependeciesItemsBody.quantity,
         updatedAt: new Date(),
@@ -313,13 +322,13 @@ export async function insertDependenciesItemsIntoDB(
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to insert database dependent item')
+    throw new DatabaseError('Failed to insert database dependent item')
   }
 }
 
 // Delete dependencies items
 export async function deleteDependenciesItemsInDB(
-  itemParam: ItemsParams,
+  itemParams: ItemsParams,
   itemData: DependenciesItemsQuery
 ) {
   try {
@@ -327,7 +336,7 @@ export async function deleteDependenciesItemsInDB(
       .delete(itemDependency)
       .where(
         and(
-          eq(itemDependency.itemId, itemParam.itemId),
+          eq(itemDependency.itemId, itemParams.itemId),
           eq(itemDependency.dependentItemId, itemData.dependentItemId)
         )
       )
@@ -335,6 +344,6 @@ export async function deleteDependenciesItemsInDB(
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new Error('Failed to delete items in the database')
+    throw new DatabaseError('Failed to delete items in the database')
   }
 }
