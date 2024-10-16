@@ -5,8 +5,8 @@ import type {
   putItemsBodySchema,
   itemsParamsSchema,
   favoriteItemsBodySchema,
-  dependeciesItemsBodySchema,
-  dependeciesItemsQuerySchema,
+  dependenciesItemsBodySchema,
+  dependenciesItemsQuerySchema,
   itemNameSchema,
   countItemsSchema,
 } from './itemsSchemas'
@@ -17,6 +17,15 @@ export type PutItemsBody = z.infer<typeof putItemsBodySchema>
 export type ItemsParams = z.infer<typeof itemsParamsSchema>
 export type ItemName = z.infer<typeof itemNameSchema>
 export type FavoriteItemsBody = z.infer<typeof favoriteItemsBodySchema>
-export type DependenciesItemsBody = z.infer<typeof dependeciesItemsBodySchema>
-export type DependenciesItemsQuery = z.infer<typeof dependeciesItemsQuerySchema>
+export type DependenciesItemsBody = z.infer<typeof dependenciesItemsBodySchema>
+export type DependenciesItemsQuery = z.infer<
+  typeof dependenciesItemsQuerySchema
+>
 export type CountItems = z.infer<typeof countItemsSchema>
+
+// Interfaces
+export interface ErrorHandlerType {
+  code?: string
+  message?: string
+  detail?: string
+}

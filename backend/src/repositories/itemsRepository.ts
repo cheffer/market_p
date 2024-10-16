@@ -3,6 +3,7 @@ import { and, eq, like, sql } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
 import type {
   CountItems,
+  ErrorHandlerType,
   DependenciesItemsBody,
   DependenciesItemsQuery,
   FavoriteItemsBody,
@@ -10,7 +11,7 @@ import type {
   PostItemsBody,
   PutItemsBody,
 } from '../schemas/types'
-import { DatabaseError } from '../errors/customErrors'
+import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 
 interface GetItemsQuery {
   name?: string
@@ -58,7 +59,7 @@ export async function getCountItems(itemsData: CountItems) {
 // Item Depedente
 export async function getCountDependentItem(
   itemParams: ItemsParams,
-  dependeciesItems: DependenciesItemsQuery
+  dependenciesItems: DependenciesItemsQuery
 ) {
   try {
     const resultCount = await db
@@ -69,7 +70,7 @@ export async function getCountDependentItem(
       .where(
         and(
           eq(itemDependency.itemId, itemParams.itemId),
-          eq(itemDependency.dependentItemId, dependeciesItems.dependentItemId)
+          eq(itemDependency.dependentItemId, dependenciesItems.dependentItemId)
         )
       )
     const result = Number(resultCount[0].count)
@@ -171,7 +172,7 @@ export async function getItemsFromDB(
         favorite: getItems.favorite,
         createdAt: sql /*sql*/`DATE(${getItems.createdAt})`.as('createdAt'),
         updatedAt: sql /*sql*/`DATE(${getItems.updatedAt})`.as('updatedAt'),
-        dependecies: sql /*sql*/`COALESCE(
+        dependencies: sql /*sql*/`COALESCE(
                 JSON_AGG(
                     CASE 
                       WHEN ${getDependency.itemDependecyId} IS NOT NULL THEN
@@ -183,7 +184,7 @@ export async function getItemsFromDB(
                     END
                 ) FILTER (WHERE ${getDependency.itemDependecyId} IS NOT NULL),
                 '[]'  
-              )`.as('itemDependecies'),
+              )`.as('itemDependencies'),
       })
       .from(getItems)
       .innerJoin(
@@ -228,14 +229,9 @@ export async function insertItemIntoDB(itemData: PostItemsBody) {
         npcValue: itemData.npcValue,
       })
       .returning()
-    const idInsert = {
-      name: resultInsert[0].name,
-    }
-    const result = await getItemsFromDB(idInsert, 1, 0)
-    return { result }
+    return resultInsert
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to insert items into the database')
+    handleDatabaseError(error as ErrorHandlerType)
   }
 }
 
@@ -252,12 +248,7 @@ export async function updateItemSetDB(
         description: itemData.description,
         categoryId: itemData.categoryId,
         howToObtain: itemData.howToObtain,
-        favorite:
-          itemData.favorite === 'true'
-            ? true
-            : itemData.favorite === 'false'
-              ? false
-              : undefined,
+        favorite: itemData.favorite,
         npcValue: itemData.npcValue
           ? Number.parseFloat(itemData.npcValue).toString()
           : null,
@@ -267,8 +258,7 @@ export async function updateItemSetDB(
       .returning()
     return { result }
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to update items in the database')
+    handleDatabaseError(error as ErrorHandlerType)
   }
 }
 
@@ -281,8 +271,7 @@ export async function deleteItemsInDB(itemParams: ItemsParams) {
       .returning()
     return result
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to delete items in the database')
+    handleDatabaseError(error as ErrorHandlerType)
   }
 }
 
@@ -299,30 +288,30 @@ export async function updateFavoriteItemSetDB(
       .returning()
     return { result }
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to update favorite item from database')
+    handleDatabaseError(error as ErrorHandlerType)
+    throw new DatabaseError('Error while updating item in the database')
   }
 }
 
 // Insert dependencies items
 export async function insertDependenciesItemsIntoDB(
   itemParams: ItemsParams,
-  dependeciesItemsBody: DependenciesItemsBody
+  dependenciesItemsBody: DependenciesItemsBody
 ) {
   try {
     const result = await db
       .insert(itemDependency)
       .values({
         itemId: itemParams.itemId,
-        dependentItemId: dependeciesItemsBody.dependentItemId,
-        quantity: dependeciesItemsBody.quantity,
+        dependentItemId: dependenciesItemsBody.dependentItemId,
+        quantity: dependenciesItemsBody.quantity,
         updatedAt: new Date(),
       })
       .returning()
     return result
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to insert database dependent item')
+    handleDatabaseError(error as ErrorHandlerType)
+    throw new DatabaseError('Error while inserting item into the database')
   }
 }
 
@@ -343,7 +332,6 @@ export async function deleteDependenciesItemsInDB(
       .returning()
     return result
   } catch (error) {
-    console.error('Database query error:', error)
-    throw new DatabaseError('Failed to delete items in the database')
+    handleDatabaseError(error as ErrorHandlerType)
   }
 }

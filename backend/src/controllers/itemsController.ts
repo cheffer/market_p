@@ -9,8 +9,8 @@ import {
   putItemsService,
 } from '../services/itemsService'
 import {
-  dependeciesItemsQuerySchema,
-  dependeciesItemsBodySchema,
+  dependenciesItemsQuerySchema,
+  dependenciesItemsBodySchema,
   favoriteItemsBodySchema,
   getItemsQuerySchema,
   itemsParamsSchema,
@@ -47,7 +47,8 @@ export const itemsController: FastifyPluginAsync = async app => {
             favorite: favoriteBoolean,
           },
           limit,
-          offset
+          offset,
+          reply
         )
         reply.status(200).send({ items, pagination })
       } catch (error) {
@@ -167,7 +168,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     {
       schema: {
         params: itemsParamsSchema,
-        body: dependeciesItemsBodySchema,
+        body: dependenciesItemsBodySchema,
       },
     },
     async (
@@ -178,11 +179,11 @@ export const itemsController: FastifyPluginAsync = async app => {
       reply: FastifyReply
     ) => {
       const itemParams = request.params
-      const dependeciesItemsBody = request.body
+      const dependenciesItemsBody = request.body
       try {
         const resultPostDependenciesItems = await postDependenciesItemsService(
           itemParams,
-          dependeciesItemsBody
+          dependenciesItemsBody
         )
         reply.status(201).send(resultPostDependenciesItems)
       } catch (error) {
@@ -198,7 +199,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     {
       schema: {
         params: itemsParamsSchema,
-        querystring: dependeciesItemsQuerySchema,
+        querystring: dependenciesItemsQuerySchema,
       },
     },
     async (

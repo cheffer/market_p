@@ -5,7 +5,6 @@ export const getItemsQuerySchema = z.object({
   name: z.string().optional(),
   categoryId: z.string().optional(),
   favorite: z.enum(['true', 'false']).optional(),
-  //favorite: z.boolean().optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })
@@ -20,8 +19,8 @@ export const postItemsBodySchema = z.object({
     required_error: "The 'categoryId' field is mandatory.",
   }),
   howToObtain: z.string().optional(),
-  favorite: z.enum(['true', 'false']).optional(),
-  //favorite: z.boolean().optional(),
+  //favorite: z.enum(['true', 'false']).optional(),
+  favorite: z.boolean().optional(),
   npcValue: z.number().optional(),
 })
 
@@ -35,8 +34,7 @@ export const putItemsBodySchema = z.object({
     required_error: "The 'categoryId' field is mandatory.",
   }),
   howToObtain: z.string().optional(),
-  favorite: z.enum(['true', 'false']).optional(),
-  //favorite: z.boolean().optional(),
+  favorite: z.boolean().optional(),
   npcValue: z
     .string()
     .optional()
@@ -61,13 +59,13 @@ export const favoriteItemsBodySchema = z.object({
 })
 
 // Schema para items dependency
-export const dependeciesItemsBodySchema = z.object({
+export const dependenciesItemsBodySchema = z.object({
   dependentItemId: z
     .string()
     .min(1, { message: 'dependent itemId cannot be empty.' }),
   quantity: z.number().min(1, { message: 'quantity cannot be empty.' }),
 })
-export const dependeciesItemsQuerySchema = z.object({
+export const dependenciesItemsQuerySchema = z.object({
   dependentItemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 

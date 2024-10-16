@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
-import pino from 'pino'
+import fastifyRedis from '@fastify/redis'
+import fastifyCaching from 'fastify-caching'
 
 import {
   serializerCompiler,
@@ -19,6 +20,7 @@ const app = fastify({
         colorize: true,
       },
     },
+    //redact: ['req.headers.authorization', 'req.body.password'], // Redigir esses campos
   },
 }).withTypeProvider<ZodTypeProvider>()
 
@@ -33,8 +35,49 @@ app.setSerializerCompiler(serializerCompiler)
 // Middleware de tratamento de erro
 app.setErrorHandler(errorHandler)
 
+// Redis e caching
+app.register(fastifyRedis, { host: '127.0.0.1' }) // Padrão do Redis
+app.register(fastifyCaching, {
+  privacy: 'public',
+  expiresIn: 3600, // Cache por 1 hora (em segundos)
+})
+
 // Registrar controlador
 app.register(itemsController)
+
+/*app.get('/health', async (request, reply) => {
+  reply.status(200).send({ status: 'OK', uptime: process.uptime() })
+})
+
+import { db } from './db'; // Assumindo que você tem um arquivo para conectar ao banco
+
+app.get('/health', async (request, reply) => {
+  try {
+    // Tentativa de consultar algo simples no banco
+    await db.raw('SELECT 1');
+    reply.status(200).send({ status: 'OK', database: 'connected', uptime: process.uptime() });
+  } catch (error) {
+    reply.status(500).send({ status: 'ERROR', database: 'disconnected' });
+  }
+});*/
+
+/*
+npm install prom-client
+import client from 'prom-client';
+
+// Configurar o coletor de métricas
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics(); // Coleta métricas padrão como memória e CPU
+
+app.get('/metrics', async (request, reply) => {
+  try {
+    const metrics = await client.register.metrics();
+    reply.header('Content-Type', client.register.contentType);
+    reply.send(metrics);
+  } catch (err) {
+    reply.status(500).send(err.message);
+  }
+});*/
 
 /*app.listen({ port: 3030 }).then(() => {
   console.log('HTTP server running on port 3030')

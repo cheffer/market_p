@@ -1,5 +1,6 @@
 import {
   ConflictError,
+  handleDatabaseError,
   NotFoundError,
   ValidationError,
 } from '../errors/customErrors'
@@ -15,6 +16,7 @@ import {
   updateFavoriteItemSetDB,
 } from '../repositories/itemsRepository'
 import type {
+  ErrorHandlerType,
   DependenciesItemsBody,
   DependenciesItemsQuery,
   FavoriteItemsBody,
@@ -22,6 +24,7 @@ import type {
   PostItemsBody,
   PutItemsBody,
 } from '../schemas/types'
+import type { FastifyReply } from 'fastify'
 
 interface GetItemsQuery {
   name?: string
@@ -33,16 +36,68 @@ interface GetItemsQuery {
 
 // Funções lógicas Items
 // Get
-export async function getItemsService(
+/*export async function getItemsService(
   filters: GetItemsQuery,
   limit: number,
-  offset: number
+  offset: number,
+  reply: FastifyReply
 ) {
+  // Criar uma chave única para o cache
+  const cacheKey = `items:${JSON.stringify(filters)}:${limit}:${offset}`
+
+  // Verificar se a resposta está no cache
+  const cached = await reply.server.redis.get(cacheKey)
+  if (cached) {
+    return JSON.parse(cached)
+  }
+
+  // Caso não tenha no cache, faz a consulta no banco
   const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
   const fullPage = Math.ceil(totalRecords / limit)
   if (Items.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
   }
+  const result = {
+    items: Items,
+    pagination: {
+      totalRecords,
+      pagina: Math.floor(offset / limit) + 1,
+      fullPage,
+      limit,
+      offset,
+    },
+  }
+  // Armazenar o resultado no cache
+  await reply.server.redis.set(cacheKey, JSON.stringify(result))
+
+  return result
+}*/
+
+export async function getItemsService(
+  itemsRepository: { getItemsFromDB: Function },
+  filters: GetItemsQuery,
+  limit: number,
+  offset: number,
+  reply: FastifyReply
+) {
+  // Criar uma chave única para o cache
+  const cacheKey = `items:${JSON.stringify(filters)}:${limit}:${offset}`
+  // Verificar se a resposta está no cache
+  const cached = await reply.server.redis.get(cacheKey)
+  if (cached) {
+    return JSON.parse(cached)
+  }
+  const { Items, totalRecords } = await itemsRepository.getItemsFromDB(
+    filters,
+    limit,
+    offset
+  )
+  const fullPage = Math.ceil(totalRecords / limit)
+  if (Items.length === 0) {
+    throw new NotFoundError('The requested resource was not found.')
+  }
+
+  // Lógica do serviço continua
   return {
     items: Items,
     pagination: {
@@ -57,15 +112,15 @@ export async function getItemsService(
 
 // Post
 export async function postItemsService(itemData: PostItemsBody) {
-  // Verifica se já existe item com esse nome
-  const itemName = { itemName: itemData.name }
-  const resultCount = await getCountItems(itemName)
+  try {
+    await insertItemIntoDB(itemData)
 
-  if (resultCount > 0) {
-    throw new ValidationError('item already exists')
+    const name = { name: itemData.name }
+    const result = await getItemsFromDB(name, 1, 0)
+    return result.Items[0]
+  } catch (error) {
+    handleDatabaseError(error as ErrorHandlerType)
   }
-  const resultInsertItem = (await insertItemIntoDB(itemData)).result.Items[0]
-  return resultInsertItem
 }
 
 // Put
@@ -73,35 +128,35 @@ export async function putItemsService(
   itemData: PutItemsBody,
   itemParams: ItemsParams
 ) {
-  // Verifica se existe esse item
   const itemId = { itemId: itemParams.itemId }
   const itemName = { name: itemData.name }
-  /*const itemIdentify = { itemId: itemParams.itemId, itemName: itemData.name }*/
-  const resultCountItem = await getCountItems(itemId)
-  if (resultCountItem === 0) {
-    throw new NotFoundError('Item not found')
-  }
-  //ajustar verificação
-  /*const resultIdentifyItem = await getCountItems(itemIdentify)
-  if (resultIdentifyItem === 0) {
-    throw new ConflictError('An item with that name already exists')
-  }*/
-  await updateItemSetDB(itemData, itemParams)
-  const resultGetItems = await getItemsFromDB(itemName, 1, 0)
+  try {
+    const resultCountItem = await getCountItems(itemId)
+    if (resultCountItem === 0) {
+      throw new NotFoundError('Item not found')
+    }
+    await updateItemSetDB(itemData, itemParams)
+    const resultGetItems = await getItemsFromDB(itemName, 1, 0)
 
-  return resultGetItems.Items[0]
+    return resultGetItems.Items[0]
+  } catch (error) {
+    handleDatabaseError(error as ErrorHandlerType)
+  }
 }
 
 // Delete
 export async function deleteItemsService(itemParams: ItemsParams) {
-  // Verifica existem esse item
   const itemId = { itemId: itemParams.itemId }
-  const resultCountItem = await getCountItems(itemId)
+  try {
+    const resultCountItem = await getCountItems(itemId)
 
-  if (resultCountItem === 0) {
-    throw new NotFoundError('Item not found')
+    if (resultCountItem === 0) {
+      throw new NotFoundError('Item not found')
+    }
+    await deleteItemsInDB(itemParams)
+  } catch (error) {
+    handleDatabaseError(error as ErrorHandlerType)
   }
-  await deleteItemsInDB(itemParams)
 }
 
 // Funções lógicas de favorite
@@ -110,8 +165,8 @@ export async function putFavoriteItemService(
   itemParams: ItemsParams,
   favoriteItemBody: FavoriteItemsBody
 ) {
-  // Verifica existe esse item
   const itemId = { itemId: itemParams.itemId }
+
   const resultCountItem = await getCountItems(itemId)
   if (resultCountItem === 0) {
     throw new NotFoundError('Item not found')
@@ -127,23 +182,27 @@ export async function putFavoriteItemService(
 // Post
 export async function postDependenciesItemsService(
   itemParams: ItemsParams,
-  dependeciesItemsBody: DependenciesItemsBody
+  dependenciesItemsBody: DependenciesItemsBody
 ) {
-  if (itemParams.itemId === dependeciesItemsBody.dependentItemId) {
+  if (itemParams.itemId === dependenciesItemsBody.dependentItemId) {
     throw new ConflictError('The item cannot be dependent on itself')
   }
-  const resultCountDependentItem = await getCountDependentItem(
-    itemParams,
-    dependeciesItemsBody
-  )
-  if (resultCountDependentItem > 0) {
-    throw new ValidationError('item already exists')
+  try {
+    const resultCountDependentItem = await getCountDependentItem(
+      itemParams,
+      dependenciesItemsBody
+    )
+    if (resultCountDependentItem > 0) {
+      throw new ValidationError('item already exists')
+    }
+    const result = await insertDependenciesItemsIntoDB(
+      itemParams,
+      dependenciesItemsBody
+    )
+    return result[0]
+  } catch (error) {
+    handleDatabaseError(error as ErrorHandlerType)
   }
-  const result = await insertDependenciesItemsIntoDB(
-    itemParams,
-    dependeciesItemsBody
-  )
-  return result[0]
 }
 
 // Delete
@@ -152,12 +211,16 @@ export async function deleteDepentenciesItemsService(
   itemData: DependenciesItemsQuery
 ) {
   const dependentItemId = { dependentItemId: itemData.dependentItemId }
-  const resultCountDependentItem = await getCountDependentItem(
-    itemParams,
-    dependentItemId
-  )
-  if (resultCountDependentItem === 0) {
-    throw new NotFoundError('Item not found')
+  try {
+    const resultCountDependentItem = await getCountDependentItem(
+      itemParams,
+      dependentItemId
+    )
+    if (resultCountDependentItem === 0) {
+      throw new NotFoundError('Item not found')
+    }
+    await deleteDependenciesItemsInDB(itemParams, itemData)
+  } catch (error) {
+    handleDatabaseError(error as ErrorHandlerType)
   }
-  await deleteDependenciesItemsInDB(itemParams, itemData)
 }
