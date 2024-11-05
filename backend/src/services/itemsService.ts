@@ -74,7 +74,6 @@ interface GetItemsQuery {
 }*/
 
 export async function getItemsService(
-  itemsRepository: { getItemsFromDB: Function },
   filters: GetItemsQuery,
   limit: number,
   offset: number,
@@ -87,11 +86,7 @@ export async function getItemsService(
   if (cached) {
     return JSON.parse(cached)
   }
-  const { Items, totalRecords } = await itemsRepository.getItemsFromDB(
-    filters,
-    limit,
-    offset
-  )
+  const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
   const fullPage = Math.ceil(totalRecords / limit)
   if (Items.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
