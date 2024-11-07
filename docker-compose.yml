@@ -26,7 +26,15 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+      
+  redis: # Serviço Redis
+    image: redis:alpine # Usando uma versão leve do Redis
+    ports:
+      - "6379:6379" # Porta padrão do Redis
+    volumes:
+      - redisdata:/data # Persistência de dados (opcional)
 
 
 volumes:
   pgdata:
+  redisdata: 

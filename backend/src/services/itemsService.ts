@@ -34,45 +34,6 @@ interface GetItemsQuery {
   offset?: number
 }
 
-// Funções lógicas Items
-// Get
-/*export async function getItemsService(
-  filters: GetItemsQuery,
-  limit: number,
-  offset: number,
-  reply: FastifyReply
-) {
-  // Criar uma chave única para o cache
-  const cacheKey = `items:${JSON.stringify(filters)}:${limit}:${offset}`
-
-  // Verificar se a resposta está no cache
-  const cached = await reply.server.redis.get(cacheKey)
-  if (cached) {
-    return JSON.parse(cached)
-  }
-
-  // Caso não tenha no cache, faz a consulta no banco
-  const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
-  const fullPage = Math.ceil(totalRecords / limit)
-  if (Items.length === 0) {
-    throw new NotFoundError('The requested resource was not found.')
-  }
-  const result = {
-    items: Items,
-    pagination: {
-      totalRecords,
-      pagina: Math.floor(offset / limit) + 1,
-      fullPage,
-      limit,
-      offset,
-    },
-  }
-  // Armazenar o resultado no cache
-  await reply.server.redis.set(cacheKey, JSON.stringify(result))
-
-  return result
-}*/
-
 export async function getItemsService(
   filters: GetItemsQuery,
   limit: number,
@@ -86,11 +47,25 @@ export async function getItemsService(
   if (cached) {
     return JSON.parse(cached)
   }
+  // Se não encontrado no cache, consultar o banco de dados
   const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
   const fullPage = Math.ceil(totalRecords / limit)
+
   if (Items.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
   }
+
+  // Armazenar a resposta no cache (feito no middleware)
+  await reply.sendCache({
+    items: Items,
+    pagination: {
+      totalRecords,
+      pagina: Math.floor(offset / limit) + 1,
+      fullPage,
+      limit,
+      offset,
+    },
+  })
 
   // Lógica do serviço continua
   return {

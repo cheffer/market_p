@@ -1,7 +1,7 @@
 import fastify from 'fastify'
-import fastifyCors from '@fastify/cors'
-import fastifyRedis from '@fastify/redis'
-import fastifyCaching from 'fastify-caching'
+import fastifyRedis from 'fastify-redis'
+import { cacheMiddleware } from '../middleware/cacheMiddleware'
+import { onRequestHook } from '../middleware/onRequestHook'
 
 import {
   serializerCompiler,
@@ -24,9 +24,10 @@ const app = fastify({
   },
 }).withTypeProvider<ZodTypeProvider>()
 
-app.register(fastifyCors, {
-  origin: '*',
-})
+// Registra o middleware de caching antes de qualquer rota
+app.addHook('onRequest', cacheMiddleware)
+// Registra o hook onRequest
+app.addHook('onRequest', onRequestHook)
 
 // Configurações de validação e serialização
 app.setValidatorCompiler(validatorCompiler)
@@ -36,10 +37,9 @@ app.setSerializerCompiler(serializerCompiler)
 app.setErrorHandler(errorHandler)
 
 // Redis e caching
-app.register(fastifyRedis, { host: '127.0.0.1' }) // Padrão do Redis
-app.register(fastifyCaching, {
-  privacy: 'public',
-  expiresIn: 3600, // Cache por 1 hora (em segundos)
+app.register(fastifyRedis, {
+  host: '127.0.0.1', // Padrão do Redis, use o host correto se necessário
+  port: 6379, // Default do Redis
 })
 
 // Registrar controlador
