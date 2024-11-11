@@ -18,7 +18,7 @@ export async function cacheMiddleware(
 
     // Armazenar uma função para enviar os dados ao cache após a execução da rota
     reply.sendCache = async <T>(data: T) => {
-      await reply.server.redis.set(cacheKey, JSON.stringify(data), 'EX', 3600) // Cache por 1 hora
+      await reply.server.redis.set(cacheKey, JSON.stringify(data), 'EX', 1) // Cache por 1 hora
     }
   }
 }

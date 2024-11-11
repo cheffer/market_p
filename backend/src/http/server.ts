@@ -2,6 +2,8 @@ import fastify from 'fastify'
 import fastifyRedis from 'fastify-redis'
 import { cacheMiddleware } from '../middleware/cacheMiddleware'
 import { onRequestHook } from '../middleware/onRequestHook'
+import { onResponseHook } from '../middleware/onResponseHook';
+import { client, httpRequestDurationMicroseconds } from '../metrics/metrics';
 
 import {
   serializerCompiler,
@@ -28,6 +30,8 @@ const app = fastify({
 app.addHook('onRequest', cacheMiddleware)
 // Registra o hook onRequest
 app.addHook('onRequest', onRequestHook)
+// Registrar o hook onResponse
+app.addHook('onResponse', onResponseHook);
 
 // Configurações de validação e serialização
 app.setValidatorCompiler(validatorCompiler)
@@ -45,43 +49,21 @@ app.register(fastifyRedis, {
 // Registrar controlador
 app.register(itemsController)
 
-/*app.get('/health', async (request, reply) => {
-  reply.status(200).send({ status: 'OK', uptime: process.uptime() })
+// Health Check
+app.get('/health', async (_, reply) => {
+  reply.status(200).send({
+      status: 'OK',
+      uptime: process.uptime(),
+      timestamp: new Date(),
+  })
 })
 
-import { db } from './db'; // Assumindo que você tem um arquivo para conectar ao banco
+// Metrics
+app.get('/metrics', async (_, reply) => {
+  reply.header('Content-Type', client.register.contentType);
+  reply.send(await client.register.metrics());
+});
 
-app.get('/health', async (request, reply) => {
-  try {
-    // Tentativa de consultar algo simples no banco
-    await db.raw('SELECT 1');
-    reply.status(200).send({ status: 'OK', database: 'connected', uptime: process.uptime() });
-  } catch (error) {
-    reply.status(500).send({ status: 'ERROR', database: 'disconnected' });
-  }
-});*/
-
-/*
-npm install prom-client
-import client from 'prom-client';
-
-// Configurar o coletor de métricas
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics(); // Coleta métricas padrão como memória e CPU
-
-app.get('/metrics', async (request, reply) => {
-  try {
-    const metrics = await client.register.metrics();
-    reply.header('Content-Type', client.register.contentType);
-    reply.send(metrics);
-  } catch (err) {
-    reply.status(500).send(err.message);
-  }
-});*/
-
-/*app.listen({ port: 3030 }).then(() => {
-  console.log('HTTP server running on port 3030')
-})*/
 app.listen({ port: 3030 }, (err, address) => {
   if (err) {
     app.log.error(err) // Utilizando o logger nativo do Fastify
