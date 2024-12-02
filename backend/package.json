@@ -25,6 +25,7 @@
     "fastify-caching": "^5.0.0",
     "fastify-redis": "^4.3.3",
     "fastify-type-provider-zod": "^4.0.2",
+    "hygen": "^6.2.11",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
     "postgres": "^3.4.4",
