@@ -2,8 +2,8 @@ import fastify from 'fastify'
 import fastifyRedis from 'fastify-redis'
 import { cacheMiddleware } from '../middleware/cacheMiddleware'
 import { onRequestHook } from '../middleware/onRequestHook'
-import { onResponseHook } from '../middleware/onResponseHook';
-import { client, httpRequestDurationMicroseconds } from '../metrics/metrics';
+import { onResponseHook } from '../middleware/onResponseHook'
+import { client, httpRequestDurationMicroseconds } from '../metrics/metrics'
 
 import {
   serializerCompiler,
@@ -12,6 +12,7 @@ import {
 } from 'fastify-type-provider-zod'
 import { itemsController } from '../controllers/itemsController'
 import { errorHandler } from '../middleware/errorHandler'
+import { categoriesController } from '../controllers/categoriesController'
 
 const app = fastify({
   logger: {
@@ -31,7 +32,7 @@ app.addHook('onRequest', cacheMiddleware)
 // Registra o hook onRequest
 app.addHook('onRequest', onRequestHook)
 // Registrar o hook onResponse
-app.addHook('onResponse', onResponseHook);
+app.addHook('onResponse', onResponseHook)
 
 // Configurações de validação e serialização
 app.setValidatorCompiler(validatorCompiler)
@@ -48,21 +49,22 @@ app.register(fastifyRedis, {
 
 // Registrar controlador
 app.register(itemsController)
+app.register(categoriesController)
 
 // Health Check
 app.get('/health', async (_, reply) => {
   reply.status(200).send({
-      status: 'OK',
-      uptime: process.uptime(),
-      timestamp: new Date(),
+    status: 'OK',
+    uptime: process.uptime(),
+    timestamp: new Date(),
   })
 })
 
 // Metrics
 app.get('/metrics', async (_, reply) => {
-  reply.header('Content-Type', client.register.contentType);
-  reply.send(await client.register.metrics());
-});
+  reply.header('Content-Type', client.register.contentType)
+  reply.send(await client.register.metrics())
+})
 
 app.listen({ port: 3030 }, (err, address) => {
   if (err) {

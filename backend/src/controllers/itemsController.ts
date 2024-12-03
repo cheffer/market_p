@@ -28,7 +28,7 @@ import type {
 } from '../schemas/types'
 
 export const itemsController: FastifyPluginAsync = async app => {
-  // Rota para GET /items
+  // Route from GET /items
   app.get(
     '/items',
     { schema: { querystring: getItemsQuerySchema } },
@@ -62,7 +62,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para POST /items
+  // Route from POST /items
   app.post(
     '/items',
     { schema: { body: postItemsBodySchema } },
@@ -81,7 +81,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para PUT /items/:{itemID}
+  // Route from PUT /items/:{itemID}
   app.put(
     '/items/:itemId',
     {
@@ -109,7 +109,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para DELETE /items/:{itemID}
+  // Route from DELETE /items/:{itemID}
   app.delete(
     '/items/:itemId',
     { schema: { params: itemsParamsSchema } },
@@ -131,7 +131,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para PUT favorito /items/:{itemID}/favorite
+  // Route from PUT favorite /items/:{itemID}/favorite
   app.put(
     '/items/:itemId/favorite',
     {
@@ -162,7 +162,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para POST dependencies /items/:{itemID}/dependencies
+  // Route from POST dependencies /items/:{itemID}/dependencies
   app.post(
     '/items/:itemId/dependencies',
     {
@@ -193,7 +193,7 @@ export const itemsController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Rota para DELETE dependencies /items/:{itemID}/dependencies
+  // Route from DELETE dependencies /items/:{itemID}/dependencies
   app.delete(
     '/items/:itemId/dependencies',
     {

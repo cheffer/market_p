@@ -6,46 +6,95 @@ import {
   putCategoriesService,
 } from '../services/categoriesService'
 import {
-  categoriesQuerySchema,
-  categoriesBodySchema,
-  categoriesParamsSchema,
+  categoriesParams,
+  postCategoriesBodySchema,
+  putCategoriesBodySchema,
 } from '../schemas/categoriesSchemas'
 import type {
-  categoriesBody,
-  GetCategoriesQuery,
-  categoriesParams,
+  CategoriesParam,
   PostCategoriesBody,
   PutCategoriesBody,
 } from '../schemas/types'
 
 export const categoriesController: FastifyPluginAsync = async app => {
-  // Rota para GET /categories
+  // Route from get categories
   app.get(
     '/categories',
-    { schema: { querystring: getCategoriesQuerySchema } },
-    async (
-      request: FastifyRequest<{ Querystring: GetCategoriesQuery }>,
-      reply: FastifyReply
-    ) => {
-      const { ?, limit, offset } = request.query
-      const favoriteBoolean =
-        favorite === 'true' ? true : favorite === 'false' ? false : undefined
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { categories, pagination } = await getCategoriesService(
-          {
-            ?
-          },
-          limit,
-          offset,
-          reply
-        )
-        reply.status(200).send({ categories, pagination })
+        const result = await getCategoriesService()
+        reply.status(200).send(result)
       } catch (error) {
         // Logando erro
+        request.log.error('Error when searching categories', error)
+        throw error // O middleware de erros lidará com o erro
+      }
+    }
+  )
+
+  // Route from post categories
+  app.post(
+    '/categories',
+    { schema: { body: postCategoriesBodySchema } },
+    async (
+      request: FastifyRequest<{ Body: PostCategoriesBody }>,
+      reply: FastifyReply
+    ) => {
+      const categoryData = request.body
+      try {
+        await postCategoriesService(categoryData)
+        reply.status(201).send('Category created successfully')
+      } catch (error) {
+        request.log.error('Error creating item', error)
+        throw error
+      }
+    }
+  )
+
+  // Route from put categories
+  app.put(
+    '/categories/:categoryId',
+    { schema: { body: putCategoriesBodySchema, params: categoriesParams } },
+    async (
+      request: FastifyRequest<{
+        Body: PutCategoriesBody
+        Params: CategoriesParam
+      }>,
+      reply: FastifyReply
+    ) => {
+      const categoryData = request.body
+      const categoryParams = request.params
+      try {
+        await putCategoriesService(categoryData, categoryParams)
+        reply.status(200).send('Category updated successfully')
+      } catch (error) {
         request.log.error(
-          `Error when searching for item with name: ${name}`,
+          `Error updating category with ID: ${categoryParams.categoryId}`,
           error
         )
+        throw error
+      }
+    }
+  )
+
+  // Route from put categories
+  app.delete(
+    '/categories/:categoryId',
+    { schema: { params: categoriesParams } },
+    async (
+      request: FastifyRequest<{ Params: CategoriesParam }>,
+      reply: FastifyReply
+    ) => {
+      const categoryParams = request.params
+      try {
+        await deleteCategoriesService(categoryParams)
+        reply.status(204).send()
+      } catch (error) {
+        request.log.error(
+          `Error deleting category with ID: ${categoryParams.categoryId}`,
+          error
+        )
+        throw error
       }
     }
   )

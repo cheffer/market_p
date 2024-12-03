@@ -1,6 +1,6 @@
 import z from 'zod'
 
-// Schema para consulta de itens (GET /items)
+// Schema for searching itens (GET /items)
 export const getItemsQuerySchema = z.object({
   name: z.string().optional(),
   categoryId: z.string().optional(),
@@ -9,7 +9,7 @@ export const getItemsQuerySchema = z.object({
   offset: z.string().optional().default('0').transform(Number),
 })
 
-// Schema para criação de itens (POST /items)
+// Schema for creating items (POST /items)
 export const postItemsBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
@@ -24,7 +24,7 @@ export const postItemsBodySchema = z.object({
   npcValue: z.number().optional(),
 })
 
-// Schema para atualização de itens (PUT /items/:{itemId})
+// Schema for updating items (PUT /items/:{itemId})
 export const putItemsBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
@@ -43,22 +43,22 @@ export const putItemsBodySchema = z.object({
     }),
 })
 
-// Schema para params itemId
+// Schema for itemId params
 export const itemsParamsSchema = z.object({
   itemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 
-// Schema para itemName
+// Schema for itemName
 export const itemNameSchema = z.object({
   itemName: z.string().min(1, { message: 'itemName cannot be empty.' }),
 })
 
-// Schema para favorite Items
+// Schema for favorite Items
 export const favoriteItemsBodySchema = z.object({
   favorite: z.boolean(),
 })
 
-// Schema para items dependency
+// Schema for dependency items
 export const dependenciesItemsBodySchema = z.object({
   dependentItemId: z
     .string()
@@ -69,7 +69,7 @@ export const dependenciesItemsQuerySchema = z.object({
   dependentItemId: z.string().min(1, { message: 'itemId cannot be empty.' }),
 })
 
-// Schema para consultas na items
+// Schema for queries in items
 export const countItemsSchema = z.object({
   itemId: z.string().optional(),
   itemName: z.string().optional(),
