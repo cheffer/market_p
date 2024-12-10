@@ -3,7 +3,7 @@ import { and, eq, like, sql } from 'drizzle-orm'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import { category } from '../db/schema'
 import type {
-  CategoriesParam,
+  CategoriesParams,
   ErrorHandlerType,
   PostCategoriesBody,
   PutCategoriesBody,
@@ -24,7 +24,7 @@ export async function getCategoriesFromDB() {
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new DatabaseError('Failed to fetch items from the database')
+    throw new DatabaseError('Failed to fetch category from the database')
   }
 }
 
@@ -39,7 +39,7 @@ export async function insertCategoriesIntoDB(categoryData: PostCategoriesBody) {
   }
 }
 
-export async function getCountCategories(categoryParams: CategoriesParam) {
+export async function getCountCategories(categoryParams: CategoriesParams) {
   try {
     const query = db
       .select({
@@ -58,7 +58,7 @@ export async function getCountCategories(categoryParams: CategoriesParam) {
 
 export async function updateCategorySetDB(
   categoryData: PutCategoriesBody,
-  categoryParams: CategoriesParam
+  categoryParams: CategoriesParams
 ) {
   try {
     await db
@@ -74,7 +74,7 @@ export async function updateCategorySetDB(
   }
 }
 
-export async function deleteCategoryInDB(categoriesParams: CategoriesParam) {
+export async function deleteCategoryInDB(categoriesParams: CategoriesParams) {
   try {
     await db
       .delete(category)

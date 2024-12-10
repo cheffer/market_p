@@ -11,7 +11,7 @@ import {
   putCategoriesBodySchema,
 } from '../schemas/categoriesSchemas'
 import type {
-  CategoriesParam,
+  CategoriesParams,
   PostCategoriesBody,
   PutCategoriesBody,
 } from '../schemas/types'
@@ -45,7 +45,7 @@ export const categoriesController: FastifyPluginAsync = async app => {
         await postCategoriesService(categoryData)
         reply.status(201).send('Category created successfully')
       } catch (error) {
-        request.log.error('Error creating item', error)
+        request.log.error('Error creating category', error)
         throw error
       }
     }
@@ -58,7 +58,7 @@ export const categoriesController: FastifyPluginAsync = async app => {
     async (
       request: FastifyRequest<{
         Body: PutCategoriesBody
-        Params: CategoriesParam
+        Params: CategoriesParams
       }>,
       reply: FastifyReply
     ) => {
@@ -82,7 +82,7 @@ export const categoriesController: FastifyPluginAsync = async app => {
     '/categories/:categoryId',
     { schema: { params: categoriesParams } },
     async (
-      request: FastifyRequest<{ Params: CategoriesParam }>,
+      request: FastifyRequest<{ Params: CategoriesParams }>,
       reply: FastifyReply
     ) => {
       const categoryParams = request.params

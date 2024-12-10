@@ -7,7 +7,7 @@ import {
   updateCategorySetDB,
 } from '../repositories/categoriesRepository'
 import type {
-  CategoriesParam,
+  CategoriesParams,
   ErrorHandlerType,
   PostCategoriesBody,
   PutCategoriesBody,
@@ -28,7 +28,7 @@ export async function postCategoriesService(categoryData: PostCategoriesBody) {
 
 export async function putCategoriesService(
   categoryData: PutCategoriesBody,
-  categoryParams: CategoriesParam
+  categoryParams: CategoriesParams
 ) {
   try {
     const resultCountCategory = await getCountCategories(categoryParams)
@@ -41,7 +41,9 @@ export async function putCategoriesService(
   }
 }
 
-export async function deleteCategoriesService(categoryParams: CategoriesParam) {
+export async function deleteCategoriesService(
+  categoryParams: CategoriesParams
+) {
   try {
     const resultCountCategory = await getCountCategories(categoryParams)
     if (resultCountCategory === 0) {

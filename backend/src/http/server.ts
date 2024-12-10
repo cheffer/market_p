@@ -13,6 +13,7 @@ import {
 import { itemsController } from '../controllers/itemsController'
 import { errorHandler } from '../middleware/errorHandler'
 import { categoriesController } from '../controllers/categoriesController'
+import { craftsController } from '../controllers/craftsController'
 
 const app = fastify({
   logger: {
@@ -50,6 +51,7 @@ app.register(fastifyRedis, {
 // Registrar controlador
 app.register(itemsController)
 app.register(categoriesController)
+app.register(craftsController)
 
 // Health Check
 app.get('/health', async (_, reply) => {
