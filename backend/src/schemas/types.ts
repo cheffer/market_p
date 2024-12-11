@@ -21,6 +21,12 @@ import type {
   postCraftsBodySchema,
   putCraftsBodySchema,
 } from './craftsSchemas'
+import type {
+  creaturesParams,
+  getCreaturesQuerySchema,
+  postCreaturesBodySchema,
+  putCreaturesBodySchema,
+} from './creaturesSchemas'
 
 /* Types */
 // Items
@@ -48,6 +54,12 @@ export type GetCraftsQuery = z.infer<typeof getCraftsQuerySchema>
 export type PostCraftsBody = z.infer<typeof postCraftsBodySchema>
 export type PutCraftsBody = z.infer<typeof putCraftsBodySchema>
 export type CraftsParams = z.infer<typeof craftsParams>
+
+// Creatures
+export type GetCreaturesQuery = z.infer<typeof getCreaturesQuerySchema>
+export type PostCreaturesBody = z.infer<typeof postCreaturesBodySchema>
+export type PutCreaturesBody = z.infer<typeof putCreaturesBodySchema>
+export type CreaturesParams = z.infer<typeof creaturesParams>
 /* Types */
 
 /* Interfaces */

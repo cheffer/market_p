@@ -116,7 +116,7 @@ export async function getCountCrafts(craftParams: CraftsParams) {
     return result
   } catch (error) {
     console.error('Database query error:', error)
-    throw new DatabaseError('Failed to fetch category from the database')
+    throw new DatabaseError('Failed to fetch craft from the database')
   }
 }
 

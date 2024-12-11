@@ -77,7 +77,7 @@ export const categoriesController: FastifyPluginAsync = async app => {
     }
   )
 
-  // Route from put categories
+  // Route from delete categories
   app.delete(
     '/categories/:categoryId',
     { schema: { params: categoriesParams } },

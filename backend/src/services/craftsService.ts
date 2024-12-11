@@ -63,7 +63,7 @@ export async function getCraftsService(
     throw new NotFoundError('The requested resource was not found.')
   }
   return {
-    craft: craftResult,
+    crafts: craftResult,
     pagination: {
       totalRecords,
       pagina: Math.floor(offset / limit) + 1,

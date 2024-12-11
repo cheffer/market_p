@@ -37,15 +37,15 @@ export const craftsController: FastifyPluginAsync = async app => {
       } = request.query
 
       try {
-        const { craft, pagination } = await getCraftsService(
+        const { crafts, pagination } = await getCraftsService(
           { itemId, professionId, requiredRank, requiredSkill },
           limit,
           offset
         )
-        reply.status(200).send({ craft, pagination })
+        reply.status(200).send({ crafts, pagination })
       } catch (error) {
         // Logando erro
-        request.log.error('Error when searching categories', error)
+        request.log.error('Error when searching craft', error)
         throw error // O middleware de erros lidará com o erro
       }
     }
@@ -101,13 +101,13 @@ export const craftsController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Params: CraftsParams }>,
       reply: FastifyReply
     ) => {
-      const craftsParams = request.params
+      const craftParams = request.params
       try {
-        await deleteCraftsService(craftsParams)
+        await deleteCraftsService(craftParams)
         reply.status(204).send()
       } catch (error) {
         request.log.error(
-          `Error deleting craft with ID: ${craftsParams.craftId}`,
+          `Error deleting craft with ID: ${craftParams.craftId}`,
           error
         )
         throw error

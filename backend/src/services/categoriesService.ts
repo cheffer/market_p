@@ -15,7 +15,7 @@ import type {
 
 export async function getCategoriesService() {
   const resultGetCategories = await getCategoriesFromDB()
-  return resultGetCategories
+  return { categories: resultGetCategories }
 }
 
 export async function postCategoriesService(categoryData: PostCategoriesBody) {

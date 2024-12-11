@@ -122,7 +122,7 @@ export const sale = pgTable('sale', {
     .defaultNow(),
 })
 
-export const profession = pgTable('prefession', {
+export const profession = pgTable('profession', {
   professionId: text('profession_id')
     .primaryKey()
     .$defaultFn(() => createId()),

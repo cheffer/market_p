@@ -8,6 +8,13 @@
       "when": 1727735136702,
       "tag": "0000_shiny_giant_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733930932350,
+      "tag": "0001_cloudy_enchantress",
+      "breakpoints": true
     }
   ]
 }
