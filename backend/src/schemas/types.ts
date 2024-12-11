@@ -27,6 +27,12 @@ import type {
   postCreaturesBodySchema,
   putCreaturesBodySchema,
 } from './creaturesSchemas'
+import type {
+  creaturesDropsParams,
+  getCreaturesDropsQuerySchema,
+  postCreaturesDropsBodySchema,
+  putCreaturesDropsBodySchema,
+} from './creaturesDropsSchemas'
 
 /* Types */
 // Items
@@ -60,6 +66,16 @@ export type GetCreaturesQuery = z.infer<typeof getCreaturesQuerySchema>
 export type PostCreaturesBody = z.infer<typeof postCreaturesBodySchema>
 export type PutCreaturesBody = z.infer<typeof putCreaturesBodySchema>
 export type CreaturesParams = z.infer<typeof creaturesParams>
+
+// Creatures Drops
+export type GetCreaturesDropsQuery = z.infer<
+  typeof getCreaturesDropsQuerySchema
+>
+export type PostCreaturesDropsBody = z.infer<
+  typeof postCreaturesDropsBodySchema
+>
+export type PutCreaturesDropsBody = z.infer<typeof putCreaturesDropsBodySchema>
+export type CreaturesDropsParams = z.infer<typeof creaturesDropsParams>
 /* Types */
 
 /* Interfaces */

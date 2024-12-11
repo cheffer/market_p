@@ -1,0 +1,1 @@
+ALTER TABLE "creature_drop" DROP COLUMN IF EXISTS "drop_amount";

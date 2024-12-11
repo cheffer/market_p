@@ -1,0 +1,1 @@
+ALTER TABLE "creature_drop" ADD COLUMN "drop_amount" text;

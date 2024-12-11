@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "creature_drop" (
 	"creature_id" text NOT NULL,
 	"item_id" text NOT NULL,
 	"drop_chance" numeric,
+	"drop_amount" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -76,7 +77,7 @@ CREATE TABLE IF NOT EXISTS "item_value" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "prefession" (
+CREATE TABLE IF NOT EXISTS "profession" (
 	"profession_id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"specialization" text NOT NULL,
@@ -127,7 +128,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "craft" ADD CONSTRAINT "craft_profession_id_prefession_profession_id_fk" FOREIGN KEY ("profession_id") REFERENCES "public"."prefession"("profession_id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "craft" ADD CONSTRAINT "craft_profession_id_profession_profession_id_fk" FOREIGN KEY ("profession_id") REFERENCES "public"."profession"("profession_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

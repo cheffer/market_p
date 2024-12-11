@@ -1,6 +1,6 @@
 {
-  "id": "8597072d-e4df-412f-82b1-63bc930d082c",
-  "prevId": "930e1702-bc52-4416-97b0-d2246fff79ba",
+  "id": "59221bff-1c89-4b05-a04d-d2d7ad8961fb",
+  "prevId": "8597072d-e4df-412f-82b1-63bc930d082c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -220,6 +220,12 @@
         "drop_chance": {
           "name": "drop_chance",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "drop_amount": {
+          "name": "drop_amount",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

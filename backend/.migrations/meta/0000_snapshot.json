@@ -1,5 +1,5 @@
 {
-  "id": "cc71b6e3-cf2c-41ac-b904-147f6926095d",
+  "id": "930e1702-bc52-4416-97b0-d2246fff79ba",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -130,10 +130,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "craft_profession_id_prefession_profession_id_fk": {
-          "name": "craft_profession_id_prefession_profession_id_fk",
+        "craft_profession_id_profession_profession_id_fk": {
+          "name": "craft_profession_id_profession_profession_id_fk",
           "tableFrom": "craft",
-          "tableTo": "prefession",
+          "tableTo": "profession",
           "columnsFrom": [
             "profession_id"
           ],
@@ -220,6 +220,12 @@
         "drop_chance": {
           "name": "drop_chance",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "drop_amount": {
+          "name": "drop_amount",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -544,8 +550,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.prefession": {
-      "name": "prefession",
+    "public.profession": {
+      "name": "profession",
       "schema": "",
       "columns": {
         "profession_id": {

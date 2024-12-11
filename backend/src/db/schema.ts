@@ -186,6 +186,7 @@ export const creatureDrop = pgTable('creature_drop', {
     .references(() => item.itemId)
     .notNull(),
   dropChance: decimal('drop_chance'),
+  dropAmount: text('drop_amount'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

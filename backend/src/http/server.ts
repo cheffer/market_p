@@ -15,6 +15,7 @@ import { errorHandler } from '../middleware/errorHandler'
 import { categoriesController } from '../controllers/categoriesController'
 import { craftsController } from '../controllers/craftsController'
 import { creaturesController } from '../controllers/creaturesController'
+import { creaturesDropsController } from '../controllers/creaturesDropsController'
 
 const app = fastify({
   logger: {
@@ -54,6 +55,7 @@ app.register(itemsController)
 app.register(categoriesController)
 app.register(craftsController)
 app.register(creaturesController)
+app.register(creaturesDropsController)
 
 // Health Check
 app.get('/health', async (_, reply) => {
