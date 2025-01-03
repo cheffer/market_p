@@ -38,6 +38,12 @@ import type {
   inputProfessionsBodySchema,
   professionsParams,
 } from './professionsSchemas'
+import type {
+  getPurchasesQuerySchema,
+  postPurchasesBodySchema,
+  purchasesParams,
+  putPurchasesBodySchema,
+} from './purchasesSchemas'
 
 /* Types */
 // Items
@@ -86,6 +92,13 @@ export type CreaturesDropsParams = z.infer<typeof creaturesDropsParams>
 export type GetProfessionsQuery = z.infer<typeof getProfessionsQuerySchema>
 export type InputProfessionsBody = z.infer<typeof inputProfessionsBodySchema>
 export type ProfessionsParams = z.infer<typeof professionsParams>
+
+// Purchases
+export type GetPurchasesQuery = z.infer<typeof getPurchasesQuerySchema>
+export type PostPurchasesBody = z.infer<typeof postPurchasesBodySchema>
+export type PutPurchasesBody = z.infer<typeof putPurchasesBodySchema>
+export type PurchasesParams = z.infer<typeof purchasesParams>
+
 /* Types */
 
 /* Interfaces */

@@ -17,6 +17,7 @@ import { craftsController } from '../controllers/craftsController'
 import { creaturesController } from '../controllers/creaturesController'
 import { creaturesDropsController } from '../controllers/creaturesDropsController'
 import { professionsController } from '../controllers/professionsController'
+import { purchasesController } from '../controllers/purchasesController'
 
 const app = fastify({
   logger: {
@@ -58,6 +59,7 @@ app.register(craftsController)
 app.register(creaturesController)
 app.register(creaturesDropsController)
 app.register(professionsController)
+app.register(purchasesController)
 
 // Health Check
 app.get('/health', async (_, reply) => {
