@@ -50,6 +50,12 @@ import type {
   putSalesBodySchema,
   salesParams,
 } from './salesSchemas'
+import type {
+  getSimulationsQuerySchema,
+  postSimulationsBodySchema,
+  putSimulationsBodySchema,
+  simulationsParams,
+} from './simulationsSchemas'
 
 /* Types */
 // Items
@@ -110,6 +116,12 @@ export type GetSalesQuery = z.infer<typeof getSalesQuerySchema>
 export type PostSalesBody = z.infer<typeof postSalesBodySchema>
 export type PutSalesBody = z.infer<typeof putSalesBodySchema>
 export type SalesParams = z.infer<typeof salesParams>
+
+// Simulation
+export type GetSimulationsQuery = z.infer<typeof getSimulationsQuerySchema>
+export type PostSimulationsBody = z.infer<typeof postSimulationsBodySchema>
+export type PutSimulationsBody = z.infer<typeof putSimulationsBodySchema>
+export type SimulationsParams = z.infer<typeof simulationsParams>
 
 /* Types */
 

@@ -29,8 +29,12 @@ export const salesController: FastifyPluginAsync = async app => {
     ) => {
       const { itemId, limit, offset } = request.query
       try {
-        const sales = await getSalesService({ itemId, limit, offset })
-        reply.status(200).send(sales)
+        const { saleResult, pagination } = await getSalesService({
+          itemId,
+          limit,
+          offset,
+        })
+        reply.status(200).send({ saleResult, pagination })
       } catch (error) {
         request.log.error('Error when searching sales', error)
         throw error

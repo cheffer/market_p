@@ -21,13 +21,18 @@ import {
 } from '../repositories/salesRepository'
 
 export async function getSalesService(filters: GetSalesQuery) {
-  const salesResult = await getSalesFromDB(filters)
-
-  if (salesResult.length === 0) {
+  const { saleResult, totalRecords } = await getSalesFromDB(filters)
+  const fullPage = Math.ceil(totalRecords / filters.limit)
+  if (saleResult.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
   }
   return {
-    salesResult,
+    saleResult: saleResult,
+    pagination: {
+      totalRecords,
+      pagina: Math.floor(filters.offset / filters.limit) + 1,
+      fullPage,
+    },
   }
 }
 

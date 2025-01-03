@@ -25,9 +25,7 @@ export async function getProfessionsService(filters: GetProfessionsQuery) {
   if (professionsResult.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
   }
-  return {
-    professionsResult,
-  }
+  return professionsResult
 }
 
 export async function postProfessionsService(

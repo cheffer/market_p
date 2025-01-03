@@ -12,6 +12,17 @@ import { sale } from '../db/schema'
 
 export async function getSalesFromDB(filters: GetSalesQuery) {
   try {
+    const totalCount = await db
+      .select({
+        count: sql /*sql*/`COUNT(*)`.as('count'),
+      })
+      .from(sale)
+      .where(
+        and(
+          filters.itemId ? like(sale.itemId, `%${filters.itemId}%`) : undefined
+        )
+      )
+    const totalRecords = Number(totalCount[0]?.count) || 0
     const query = db
       .select({
         saleId: sale.saleId,
@@ -36,7 +47,7 @@ export async function getSalesFromDB(filters: GetSalesQuery) {
     query.limit(filters.limit).offset(filters.offset)
 
     const saleResult = await query
-    return saleResult
+    return { saleResult, totalRecords }
   } catch (error) {
     console.error('Database query error:', error)
     throw new DatabaseError('Failed to fetch sale from the database')

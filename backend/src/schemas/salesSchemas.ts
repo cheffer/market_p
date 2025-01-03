@@ -36,5 +36,5 @@ export const putSalesBodySchema = z.object({
 
 // Schema for saleId params
 export const salesParams = z.object({
-  saleId: z.string().min(1, { message: 'pruchaseId cannot be empty.' }),
+  saleId: z.string().min(1, { message: 'saleId cannot be empty.' }),
 })

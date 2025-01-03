@@ -12,6 +12,20 @@ import { purchase } from '../db/schema'
 
 export async function getPurchasesFromDB(filters: GetPurchasesQuery) {
   try {
+    const totalCount = await db
+      .select({
+        count: sql /*sql*/`COUNT(*)`.as('count'),
+      })
+      .from(purchase)
+      .where(
+        and(
+          filters.itemId
+            ? like(purchase.itemId, `%${filters.itemId}%`)
+            : undefined
+        )
+      )
+    const totalRecords = Number(totalCount[0]?.count) || 0
+
     const query = db
       .select({
         purchaseId: purchase.purchaseId,
@@ -36,7 +50,7 @@ export async function getPurchasesFromDB(filters: GetPurchasesQuery) {
     query.limit(filters.limit).offset(filters.offset)
 
     const purchaseResult = await query
-    return purchaseResult
+    return { purchaseResult, totalRecords }
   } catch (error) {
     console.error('Database query error:', error)
     throw new DatabaseError('Failed to fetch purchase from the database')
