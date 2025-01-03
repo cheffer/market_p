@@ -81,7 +81,7 @@ export async function deleteCreaturesService(creatureParams: CreaturesParams) {
   try {
     const resultCountCreature = await getCountCreatures(creatureParams)
     if (resultCountCreature === 0) {
-      throw new NotFoundError('Craft not found')
+      throw new NotFoundError('Creature not found')
     }
     await deleteCreaturesInDB(creatureParams)
   } catch (error) {

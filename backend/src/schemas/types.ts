@@ -33,6 +33,11 @@ import type {
   postCreaturesDropsBodySchema,
   putCreaturesDropsBodySchema,
 } from './creaturesDropsSchemas'
+import type {
+  getProfessionsQuerySchema,
+  inputProfessionsBodySchema,
+  professionsParams,
+} from './professionsSchemas'
 
 /* Types */
 // Items
@@ -76,6 +81,11 @@ export type PostCreaturesDropsBody = z.infer<
 >
 export type PutCreaturesDropsBody = z.infer<typeof putCreaturesDropsBodySchema>
 export type CreaturesDropsParams = z.infer<typeof creaturesDropsParams>
+
+// Professions
+export type GetProfessionsQuery = z.infer<typeof getProfessionsQuerySchema>
+export type InputProfessionsBody = z.infer<typeof inputProfessionsBodySchema>
+export type ProfessionsParams = z.infer<typeof professionsParams>
 /* Types */
 
 /* Interfaces */
