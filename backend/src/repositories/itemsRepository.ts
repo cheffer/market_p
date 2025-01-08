@@ -1,5 +1,5 @@
 import { db } from '../db'
-import { and, eq, like, sql } from 'drizzle-orm'
+import { and, eq, like, sql, asc, desc } from 'drizzle-orm'
 import { category, item, itemDependency } from '../db/schema'
 import type {
   CountItems,
@@ -10,16 +10,10 @@ import type {
   ItemsParams,
   PostItemsBody,
   PutItemsBody,
+  GetItemsQuery,
 } from '../schemas/types'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
-
-interface GetItemsQuery {
-  name?: string
-  categoryId?: string
-  favorite?: boolean
-  limit?: number
-  offset?: number
-}
+import type { Column, SQL } from 'drizzle-orm'
 
 // Consultas de validação
 // Items
@@ -34,7 +28,9 @@ export async function getCountItems(itemsData: CountItems) {
 
     // Adiciona condição por nome se fornecido
     if (itemsData.itemName) {
-      conditions.push(eq(item.name, itemsData.itemName))
+      conditions.push(
+        sql`LOWER(${item.name}) LIKE ${`%${itemsData.itemName.toLowerCase()}%`}`
+      )
     }
 
     // Adiciona condição por ID se fornecido
@@ -82,11 +78,15 @@ export async function getCountDependentItem(
 }
 
 // Consulta de items
-export async function getItemsFromDB(
-  filters: GetItemsQuery,
-  limit: number,
-  offset: number
-) {
+export async function getItemsFromDB(filters: GetItemsQuery) {
+  // Definir a função de ordenação de forma dinâmica
+  const getSortMethod = (
+    column: Column | SQL.Aliased,
+    order: 'asc' | 'desc'
+  ) => {
+    return order === 'desc' ? desc(column) : asc(column)
+  }
+  const sortOrder: 'asc' | 'desc' = filters.sortOrder ?? 'asc'
   try {
     const getItems = db.$with('get_items').as(
       db
@@ -94,6 +94,7 @@ export async function getItemsFromDB(
           itemId: item.itemId,
           name: item.name,
           categoryId: item.categoryId,
+          categoryName: sql`${category.name}`.as('categoryName'),
           howToObtain: item.howToObtain,
           npcValue: item.npcValue,
           description: item.description,
@@ -102,19 +103,31 @@ export async function getItemsFromDB(
           updatedAt: item.updatedAt,
         })
         .from(item)
+        .leftJoin(category, eq(category.categoryId, item.categoryId))
         .where(
           and(
-            filters.name ? like(item.name, `%${filters.name}%`) : undefined,
+            filters.name
+              ? sql`LOWER(${item.name}) LIKE ${`%${filters.name.toLowerCase()}%`}`
+              : undefined,
             filters.categoryId
               ? eq(item.categoryId, filters.categoryId)
               : undefined,
-            filters.favorite !== undefined
-              ? eq(item.favorite, filters.favorite)
-              : undefined
+            filters.favorite === 'true'
+              ? eq(item.favorite, true)
+              : filters.favorite === 'false'
+                ? eq(item.favorite, false)
+                : undefined
           )
         )
-        .limit(limit)
-        .offset(offset)
+        .orderBy(
+          filters.sortBy === 'favorite'
+            ? getSortMethod(item.favorite, sortOrder)
+            : filters.sortBy === 'category'
+              ? getSortMethod(category.name, sortOrder)
+              : getSortMethod(item.name, sortOrder)
+        )
+        .limit(filters.limit)
+        .offset(filters.offset)
     )
 
     // Consulta para contar o total de registros
@@ -125,26 +138,21 @@ export async function getItemsFromDB(
       .from(item)
       .where(
         and(
-          filters.name ? like(item.name, `%${filters.name}%`) : undefined,
+          filters.name
+            ? sql`LOWER(${item.name}) LIKE ${`%${filters.name.toLowerCase()}%`}`
+            : undefined,
           filters.categoryId
             ? eq(item.categoryId, filters.categoryId)
             : undefined,
-          filters.favorite !== undefined
-            ? eq(item.favorite, filters.favorite)
-            : undefined
+          filters.favorite === 'true'
+            ? eq(item.favorite, true)
+            : filters.favorite === 'false'
+              ? eq(item.favorite, false)
+              : undefined
         )
       )
 
     const totalRecords = Number(totalCount[0]?.count) || 0
-
-    const getCategories = db.$with('get_categories').as(
-      db
-        .select({
-          categoryId: category.categoryId,
-          name: category.name,
-        })
-        .from(category)
-    )
 
     const getDependency = db.$with('get_dependency').as(
       db
@@ -158,13 +166,13 @@ export async function getItemsFromDB(
     )
 
     const Items = await db
-      .with(getItems, getCategories, getDependency)
+      .with(getItems, getDependency)
       .select({
         itemId: getItems.itemId,
         name: getItems.name,
         category: sql /*sql*/`JSON_BUILD_OBJECT(
-              'categoryId', ${getCategories.categoryId},
-              'name', ${getCategories.name} 
+              'categoryId', ${getItems.categoryId},
+              'categoryName', ${getItems.categoryName} 
             )`.as('category'),
         npcValue: getItems.npcValue,
         howToObtain: getItems.howToObtain,
@@ -187,22 +195,25 @@ export async function getItemsFromDB(
               )`.as('itemDependencies'),
       })
       .from(getItems)
-      .innerJoin(
-        getCategories,
-        eq(getItems.categoryId, getCategories.categoryId)
-      )
       .leftJoin(getDependency, eq(getItems.itemId, getDependency.itemId))
       .groupBy(
         getItems.itemId,
         getItems.name,
-        getCategories.categoryId,
-        getCategories.name,
+        getItems.categoryId,
+        getItems.categoryName,
         getItems.npcValue,
         getItems.howToObtain,
         getItems.description,
         getItems.favorite,
         sql /*sql*/`DATE(${getItems.createdAt})`,
         sql /*sql*/`DATE(${getItems.updatedAt})`
+      )
+      .orderBy(
+        filters.sortBy === 'favorite'
+          ? getSortMethod(getItems.favorite, sortOrder)
+          : filters.sortBy === 'category'
+            ? getSortMethod(getItems.categoryName, sortOrder)
+            : getSortMethod(getItems.name, sortOrder)
       )
 
     return {

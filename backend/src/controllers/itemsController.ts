@@ -36,18 +36,19 @@ export const itemsController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Querystring: GetItemsQuery }>,
       reply: FastifyReply
     ) => {
-      const { name, categoryId, favorite, limit, offset } = request.query
-      const favoriteBoolean =
-        favorite === 'true' ? true : favorite === 'false' ? false : undefined
+      const { name, categoryId, favorite, sortBy, sortOrder, limit, offset } =
+        request.query
       try {
         const { items, pagination } = await getItemsService(
           {
             name,
             categoryId,
-            favorite: favoriteBoolean,
+            favorite,
+            sortBy,
+            sortOrder,
+            limit,
+            offset,
           },
-          limit,
-          offset,
           reply
         )
         reply.status(200).send({ items, pagination })

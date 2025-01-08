@@ -23,47 +23,57 @@ import type {
   ItemsParams,
   PostItemsBody,
   PutItemsBody,
+  GetItemsQuery,
 } from '../schemas/types'
 import type { FastifyReply } from 'fastify'
 
-interface GetItemsQuery {
-  name?: string
-  categoryId?: string
-  favorite?: boolean
-  limit?: number
-  offset?: number
+// Function to format the name
+function formatItemName(name: string): string {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
 }
 
 export async function getItemsService(
   filters: GetItemsQuery,
-  limit: number,
-  offset: number,
   reply: FastifyReply
 ) {
+  if (!filters.sortBy) {
+    filters.sortBy = 'name'
+  }
+
+  if (!filters.sortOrder) {
+    filters.sortOrder = 'asc'
+  }
   // Criar uma chave única para o cache
-  const cacheKey = `items:${JSON.stringify(filters)}:${limit}:${offset}`
+  const cacheKey = `items:${JSON.stringify(filters)}:${filters.limit}:${filters.offset}`
   // Verificar se a resposta está no cache
   const cached = await reply.server.redis.get(cacheKey)
   if (cached) {
     return JSON.parse(cached)
   }
   // Se não encontrado no cache, consultar o banco de dados
-  const { Items, totalRecords } = await getItemsFromDB(filters, limit, offset)
-  const fullPage = Math.ceil(totalRecords / limit)
+  const { Items, totalRecords } = await getItemsFromDB(filters)
+  const fullPage = Math.ceil(totalRecords / filters.limit)
 
   if (Items.length === 0) {
     throw new NotFoundError('The requested resource was not found.')
   }
+
+  // Format the name of each item
+  const formattedItems = Items.map(item => ({
+    ...item,
+    name: formatItemName(item.name),
+  }))
 
   // Armazenar a resposta no cache (feito no middleware)
   await reply.sendCache({
     items: Items,
     pagination: {
       totalRecords,
-      pagina: Math.floor(offset / limit) + 1,
+      pagina: Math.floor(filters.offset / filters.limit) + 1,
       fullPage,
-      limit,
-      offset,
     },
   })
 
@@ -72,10 +82,8 @@ export async function getItemsService(
     items: Items,
     pagination: {
       totalRecords,
-      pagina: Math.floor(offset / limit) + 1,
+      pagina: Math.floor(filters.offset / filters.limit) + 1,
       fullPage,
-      limit,
-      offset,
     },
   }
 }
@@ -83,10 +91,14 @@ export async function getItemsService(
 // Post
 export async function postItemsService(itemData: PostItemsBody) {
   try {
-    await insertItemIntoDB(itemData)
+    // Format item name before inserting
+    const formattedName = formatItemName(itemData.name)
+    const formattedItemData = { ...itemData, name: formattedName }
 
-    const name = { name: itemData.name }
-    const result = await getItemsFromDB(name, 1, 0)
+    await insertItemIntoDB(formattedItemData)
+
+    const name = { name: formattedName, limit: 1, offset: 0 }
+    const result = await getItemsFromDB(name)
     return result.Items[0]
   } catch (error) {
     handleDatabaseError(error as ErrorHandlerType)
@@ -99,14 +111,15 @@ export async function putItemsService(
   itemParams: ItemsParams
 ) {
   const itemId = { itemId: itemParams.itemId }
-  const itemName = { name: itemData.name }
+  const formattedName = formatItemName(itemData.name)
+  const itemName = { name: formattedName, limit: 1, offset: 0 }
   try {
     const resultCountItem = await getCountItems(itemId)
     if (resultCountItem === 0) {
       throw new NotFoundError('Item not found')
     }
-    await updateItemSetDB(itemData, itemParams)
-    const resultGetItems = await getItemsFromDB(itemName, 1, 0)
+    await updateItemSetDB({ ...itemData, name: formattedName }, itemParams)
+    const resultGetItems = await getItemsFromDB(itemName)
 
     return resultGetItems.Items[0]
   } catch (error) {

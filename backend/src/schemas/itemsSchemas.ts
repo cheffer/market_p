@@ -5,6 +5,8 @@ export const getItemsQuerySchema = z.object({
   name: z.string().optional(),
   categoryId: z.string().optional(),
   favorite: z.enum(['true', 'false']).optional(),
+  sortBy: z.enum(['name', 'category', 'favorite']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })
