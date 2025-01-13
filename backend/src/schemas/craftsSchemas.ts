@@ -78,7 +78,7 @@ export const craftsParams = z.object({
   craftId: z.string().min(1, { message: 'craftId cannot be empty.' }),
 })
 
-// Schema for creating crafts (POST /crafts)
+// Schema for check crafts
 export const checkCraftsSchema = z.object({
   itemId: z.string({
     required_error: "The 'itemId' field is mandatory.",

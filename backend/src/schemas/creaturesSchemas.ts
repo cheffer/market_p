@@ -5,6 +5,8 @@ export const getCreaturesQuerySchema = z.object({
   name: z.string().optional(),
   type: z.string().optional(),
   location: z.string().optional(),
+  sortBy: z.enum(['name', 'type', 'location']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })
@@ -14,8 +16,8 @@ export const postCreaturesBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
     .min(1, { message: 'The name cannot be empty.' }),
-  type: z.string().optional(),
-  location: z.string().optional(),
+  type: z.string(),
+  location: z.string(),
 })
 
 // Schema for updating creatures (PUT /creatures/:{creatureId})
@@ -23,11 +25,24 @@ export const putCreaturesBodySchema = z.object({
   name: z
     .string({ required_error: "The 'name' field is mandatory." })
     .min(1, { message: 'The name cannot be empty.' }),
-  type: z.string().optional(),
-  location: z.string().optional(),
+  type: z.string(),
+  location: z.string(),
 })
 
 // Schema for creatureId params
 export const creaturesParams = z.object({
   creatureId: z.string().min(1, { message: 'creatureId cannot be empty.' }),
+})
+
+// Schema for check creature
+export const checkCreaturesSchema = z.object({
+  name: z.string({
+    required_error: "The 'name' field is mandatory.",
+  }),
+  type: z.string({
+    required_error: "The 'type' field is mandatory.",
+  }),
+  location: z.string({
+    required_error: "The 'type' field is mandatory.",
+  }),
 })

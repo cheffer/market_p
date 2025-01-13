@@ -27,13 +27,18 @@ export const creaturesController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Querystring: GetCreaturesQuery }>,
       reply: FastifyReply
     ) => {
-      const { name, type, location, limit, offset } = request.query
+      const { name, type, location, sortBy, sortOrder, limit, offset } =
+        request.query
       try {
-        const { creatures, pagination } = await getCreaturesService(
-          { name, type, location },
+        const { creatures, pagination } = await getCreaturesService({
+          name,
+          type,
+          location,
+          sortBy,
+          sortOrder,
           limit,
-          offset
-        )
+          offset,
+        })
         reply.status(200).send({ creatures, pagination })
       } catch (error) {
         request.log.error('Error when searching creature', error)

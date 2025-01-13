@@ -20,9 +20,7 @@ export async function getCheckCraft(craftData: CheckCrafts) {
     .from(craft)
     .where(
       and(
-        craftData.itemId
-          ? like(craft.itemId, `%${craftData.itemId}%`)
-          : undefined,
+        craftData.itemId ? eq(craft.itemId, craftData.itemId) : undefined,
         craftData.professionId
           ? eq(craft.professionId, craftData.professionId)
           : undefined

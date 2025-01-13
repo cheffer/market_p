@@ -2,26 +2,54 @@ import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import type {
+  CreaturesCrafts,
   CreaturesParams,
   ErrorHandlerType,
+  GetCreaturesQuery,
   PostCreaturesBody,
   PutCreaturesBody,
 } from '../schemas/types'
 import { creature } from '../db/schema'
+import { getSortingFromFilters } from '../utils/sorting'
 
-interface GetCreaturesQuery {
-  name?: string
-  type?: string
-  location?: string
-  limit?: number
-  offset?: number
+export async function getCheckCreature(creaturetData: CreaturesCrafts) {
+  const query = await db
+    .select({
+      count: sql /*sql*/`COUNT(*)`.as('count'),
+    })
+    .from(creature)
+    .where(
+      and(
+        creaturetData.name ? eq(creature.name, creaturetData.name) : undefined,
+        creaturetData.type ? eq(creature.type, creaturetData.type) : undefined,
+        creaturetData.location
+          ? eq(creature.location, creaturetData.location)
+          : undefined
+      )
+    )
+  const resultCheckCraft = await query
+  const result = Number(resultCheckCraft[0].count)
+  return result
 }
 
-export async function getCreaturesFromDB(
-  filters: GetCreaturesQuery,
-  limit: number,
-  offset: number
-) {
+export async function getCreatureById(filters: CreaturesParams) {
+  const query = await db
+    .select({
+      name: creature.name,
+      type: creature.type,
+      location: creature.location,
+    })
+    .from(creature)
+    .where(eq(creature.creatureId, filters.creatureId))
+  const result = {
+    checkName: query[0].name,
+    checkType: query[0].type,
+    checkLocation: query[0].location,
+  }
+  return result
+}
+
+export async function getCreaturesFromDB(filters: GetCreaturesQuery) {
   try {
     const totalCount = await db
       .select({
@@ -50,19 +78,28 @@ export async function getCreaturesFromDB(
     const conditions = []
 
     if (filters.name) {
-      conditions.push(eq(creature.name, filters.name))
+      conditions.push(
+        sql`LOWER(${creature.name}) LIKE ${`%${filters.name.toLowerCase()}%`}`
+      )
     }
     if (filters.type) {
-      conditions.push(eq(creature.type, filters.type))
+      conditions.push(
+        sql`LOWER(${creature.type}) LIKE ${`%${filters.type.toLowerCase()}%`}`
+      )
     }
     if (filters.location) {
-      conditions.push(eq(creature.location, filters.location))
+      conditions.push(
+        sql`LOWER(${creature.location}) LIKE ${`%${filters.location.toLowerCase()}%`}`
+      )
     }
 
     if (conditions.length > 0) {
       query.where(and(...conditions))
     }
-    query.limit(limit).offset(offset)
+    const sortByColumn = filters.sortBy || 'name'
+    const sortMethod = getSortingFromFilters(filters, creature[sortByColumn])
+    query.orderBy(sortMethod)
+    query.limit(filters.limit).offset(filters.offset)
 
     const creatureResult = await query
     return { creatureResult, totalRecords }
