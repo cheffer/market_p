@@ -7,9 +7,14 @@ export const getCraftsQuerySchema = z.object({
   requiredRank: z
     .string()
     .length(1, "The 'requiredRank' must be a single character.")
-    .regex(/^[ABCDEa-e]$/, 'Only A, B, C, D, E are allowed.')
+    .regex(
+      /^[a-eA-EsS]$/,
+      'Only S, A, B, C, D, E and s, a, b, c, d, e are allowed.'
+    )
     .optional(),
   requiredSkill: z.string().optional().transform(Number),
+  sortBy: z.enum(['requiredRank', 'requiredSkill']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })
@@ -25,7 +30,10 @@ export const postCraftsBodySchema = z.object({
   requiredRank: z
     .string()
     .length(1, "The 'requiredRank' must be a single character.")
-    .regex(/^[ABCDEa-e]$/, 'Only A, B, C, D, E are allowed.')
+    .regex(
+      /^[a-eA-EsS]$/,
+      'Only S, A, B, C, D, E and s, a, b, c, d, e are allowed.'
+    )
     .optional(),
   requiredSkill: z.number().optional(),
   producedQuantity: z.number().optional(),
@@ -49,7 +57,10 @@ export const putCraftsBodySchema = z.object({
   requiredRank: z
     .string()
     .length(1, "The 'requiredRank' must be a single character.")
-    .regex(/^[ABCDEa-e]$/, 'Only A, B, C, D, E are allowed.')
+    .regex(
+      /^[a-eA-EsS]$/,
+      'Only S, A, B, C, D, E and s, a, b, c, d, e are allowed.'
+    )
     .optional(),
   requiredSkill: z.number().optional(),
   producedQuantity: z.number().optional(),
@@ -65,4 +76,14 @@ export const putCraftsBodySchema = z.object({
 // Schema for craftId params
 export const craftsParams = z.object({
   craftId: z.string().min(1, { message: 'craftId cannot be empty.' }),
+})
+
+// Schema for creating crafts (POST /crafts)
+export const checkCraftsSchema = z.object({
+  itemId: z.string({
+    required_error: "The 'itemId' field is mandatory.",
+  }),
+  professionId: z.string({
+    required_error: "The 'professionId' field is mandatory.",
+  }),
 })

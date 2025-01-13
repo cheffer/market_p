@@ -14,6 +14,7 @@ import type {
 } from '../schemas/types'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import type { Column, SQL } from 'drizzle-orm'
+import { getSortingFromFilters } from '../utils/sorting'
 
 // Consultas de validação
 // Items
@@ -79,14 +80,12 @@ export async function getCountDependentItem(
 
 // Consulta de items
 export async function getItemsFromDB(filters: GetItemsQuery) {
-  // Definir a função de ordenação de forma dinâmica
-  const getSortMethod = (
-    column: Column | SQL.Aliased,
-    order: 'asc' | 'desc'
-  ) => {
-    return order === 'desc' ? desc(column) : asc(column)
-  }
-  const sortOrder: 'asc' | 'desc' = filters.sortOrder ?? 'asc'
+  const sortMethodForCTE =
+    filters.sortBy === 'favorite'
+      ? getSortingFromFilters(filters, item.favorite)
+      : filters.sortBy === 'category'
+        ? getSortingFromFilters(filters, category.name)
+        : getSortingFromFilters(filters, item.name)
   try {
     const getItems = db.$with('get_items').as(
       db
@@ -119,13 +118,7 @@ export async function getItemsFromDB(filters: GetItemsQuery) {
                 : undefined
           )
         )
-        .orderBy(
-          filters.sortBy === 'favorite'
-            ? getSortMethod(item.favorite, sortOrder)
-            : filters.sortBy === 'category'
-              ? getSortMethod(category.name, sortOrder)
-              : getSortMethod(item.name, sortOrder)
-        )
+        .orderBy(sortMethodForCTE)
         .limit(filters.limit)
         .offset(filters.offset)
     )
@@ -164,6 +157,13 @@ export async function getItemsFromDB(filters: GetItemsQuery) {
         })
         .from(itemDependency)
     )
+
+    const sortMethodForQuery =
+      filters.sortBy === 'favorite'
+        ? getSortingFromFilters(filters, getItems.favorite)
+        : filters.sortBy === 'category'
+          ? getSortingFromFilters(filters, getItems.categoryName)
+          : getSortingFromFilters(filters, getItems.name)
 
     const Items = await db
       .with(getItems, getDependency)
@@ -208,13 +208,7 @@ export async function getItemsFromDB(filters: GetItemsQuery) {
         sql /*sql*/`DATE(${getItems.createdAt})`,
         sql /*sql*/`DATE(${getItems.updatedAt})`
       )
-      .orderBy(
-        filters.sortBy === 'favorite'
-          ? getSortMethod(getItems.favorite, sortOrder)
-          : filters.sortBy === 'category'
-            ? getSortMethod(getItems.categoryName, sortOrder)
-            : getSortMethod(getItems.name, sortOrder)
-      )
+      .orderBy(sortMethodForQuery)
 
     return {
       Items,

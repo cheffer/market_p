@@ -32,16 +32,23 @@ export const craftsController: FastifyPluginAsync = async app => {
         professionId,
         requiredRank,
         requiredSkill,
+        sortBy,
+        sortOrder,
         limit,
         offset,
       } = request.query
 
       try {
-        const { crafts, pagination } = await getCraftsService(
-          { itemId, professionId, requiredRank, requiredSkill },
+        const { crafts, pagination } = await getCraftsService({
+          itemId,
+          professionId,
+          requiredRank,
+          requiredSkill,
+          sortBy,
+          sortOrder,
           limit,
-          offset
-        )
+          offset,
+        })
         reply.status(200).send({ crafts, pagination })
       } catch (error) {
         // Logando erro

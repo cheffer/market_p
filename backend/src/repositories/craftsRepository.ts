@@ -2,27 +2,50 @@ import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import type {
+  CheckCrafts,
   CraftsParams,
   ErrorHandlerType,
+  GetCraftsQuery,
   PostCraftsBody,
   PutCraftsBody,
 } from '../schemas/types'
 import { craft } from '../db/schema'
+import { getSortingFromFilters } from '../utils/sorting'
 
-interface GetCraftsQuery {
-  itemId?: string
-  professionId?: string
-  requiredRank?: string
-  requiredSkill?: number
-  limit?: number
-  offset?: number
+export async function getCheckCraft(craftData: CheckCrafts) {
+  const query = await db
+    .select({
+      count: sql /*sql*/`COUNT(*)`.as('count'),
+    })
+    .from(craft)
+    .where(
+      and(
+        craftData.itemId
+          ? like(craft.itemId, `%${craftData.itemId}%`)
+          : undefined,
+        craftData.professionId
+          ? eq(craft.professionId, craftData.professionId)
+          : undefined
+      )
+    )
+  const resultCheckCraft = await query
+  const result = Number(resultCheckCraft[0].count)
+  return result
 }
 
-export async function getCraftsFromDB(
-  filters: GetCraftsQuery,
-  limit: number,
-  offset: number
-) {
+export async function getCraftById(filters: CraftsParams) {
+  const query = await db
+    .select({ itemId: craft.itemId, professionId: craft.professionId })
+    .from(craft)
+    .where(eq(craft.craftId, filters.craftId))
+  const result = {
+    checkItemId: query[0].itemId,
+    checkProfessionId: query[0].professionId,
+  }
+  return result
+}
+
+export async function getCraftsFromDB(filters: GetCraftsQuery) {
   try {
     const totalCount = await db
       .select({
@@ -78,7 +101,11 @@ export async function getCraftsFromDB(
     if (conditions.length > 0) {
       query.where(and(...conditions))
     }
-    query.limit(limit).offset(offset)
+    //SortColumnsCraft
+    const sortByColumn = filters.sortBy || 'requiredRank'
+    const sortMethod = getSortingFromFilters(filters, craft[sortByColumn])
+    query.orderBy(sortMethod)
+    query.limit(filters.limit).offset(filters.offset)
 
     const craftResult = await query
     return { craftResult, totalRecords }

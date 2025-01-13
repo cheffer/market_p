@@ -39,13 +39,6 @@ export async function getItemsService(
   filters: GetItemsQuery,
   reply: FastifyReply
 ) {
-  if (!filters.sortBy) {
-    filters.sortBy = 'name'
-  }
-
-  if (!filters.sortOrder) {
-    filters.sortOrder = 'asc'
-  }
   // Criar uma chave única para o cache
   const cacheKey = `items:${JSON.stringify(filters)}:${filters.limit}:${filters.offset}`
   // Verificar se a resposta está no cache
