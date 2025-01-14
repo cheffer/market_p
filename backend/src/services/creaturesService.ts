@@ -21,7 +21,6 @@ import {
   insertCreaturesIntoDB,
   updateCreaturesSetDB,
 } from '../repositories/creaturesRepository'
-import { creaturesParams } from '../schemas/creaturesSchemas'
 
 export async function getCreaturesService(filters: GetCreaturesQuery) {
   const { creatureResult, totalRecords } = await getCreaturesFromDB(filters)

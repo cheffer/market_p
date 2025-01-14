@@ -3,6 +3,8 @@ import z from 'zod'
 // Schema for searching purchases (GET /purchases)
 export const getPurchasesQuerySchema = z.object({
   itemId: z.string().optional(),
+  sortBy: z.enum(['quantity', 'unitPrice', 'createdAt']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })

@@ -27,10 +27,12 @@ export const salesController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Querystring: GetSalesQuery }>,
       reply: FastifyReply
     ) => {
-      const { itemId, limit, offset } = request.query
+      const { itemId, sortBy, sortOrder, limit, offset } = request.query
       try {
         const { saleResult, pagination } = await getSalesService({
           itemId,
+          sortBy,
+          sortOrder,
           limit,
           offset,
         })

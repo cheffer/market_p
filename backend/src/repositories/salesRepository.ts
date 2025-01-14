@@ -9,6 +9,7 @@ import type {
   SalesParams,
 } from '../schemas/types'
 import { sale } from '../db/schema'
+import { getSortingFromFilters } from '../utils/sorting'
 
 export async function getSalesFromDB(filters: GetSalesQuery) {
   try {
@@ -43,6 +44,10 @@ export async function getSalesFromDB(filters: GetSalesQuery) {
     if (conditions.length > 0) {
       query.where(and(...conditions))
     }
+    const sortByColumn = filters.sortBy || 'createdAt'
+    const sortMethod = getSortingFromFilters(filters, sale[sortByColumn])
+    query.orderBy(sortMethod)
+    query.limit(filters.limit).offset(filters.offset)
 
     query.limit(filters.limit).offset(filters.offset)
 

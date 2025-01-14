@@ -13,7 +13,9 @@ import type {
 } from '../schemas/types'
 import {
   deleteProfessionsInDB,
+  getCheckProfession,
   getCountProfessions,
+  getProfessionById,
   getProfessionsFromDB,
   insertProfessionsIntoDB,
   updateProfessionsSetDB,
@@ -31,7 +33,18 @@ export async function getProfessionsService(filters: GetProfessionsQuery) {
 export async function postProfessionsService(
   professionData: InputProfessionsBody
 ) {
+  const checkProfession = {
+    name: professionData.name,
+    specialization: professionData.specialization,
+  }
   try {
+    const resultcheckCreature = await getCheckProfession(checkProfession)
+
+    if (resultcheckCreature > 0) {
+      throw new NotFoundError(
+        'There is already a specialization for this profession'
+      )
+    }
     await insertProfessionsIntoDB(professionData)
   } catch (error) {
     handleDatabaseError(error as ErrorHandlerType)
@@ -42,7 +55,25 @@ export async function putProfessionsService(
   professionData: InputProfessionsBody,
   professionParams: ProfessionsParams
 ) {
+  const checkProfession = {
+    name: professionData.name,
+    specialization: professionData.specialization,
+  }
   try {
+    const { checkName, checkSpecialization } =
+      await getProfessionById(professionParams)
+    if (
+      checkName !== professionData.name ||
+      checkSpecialization !== professionData.specialization
+    ) {
+      const resultcheckCreature = await getCheckProfession(checkProfession)
+
+      if (resultcheckCreature > 0) {
+        throw new NotFoundError(
+          'There is already a specialization for this profession'
+        )
+      }
+    }
     const resultCountProfession = await getCountProfessions(professionParams)
     if (resultCountProfession === 0) {
       throw new NotFoundError('Profession not found')

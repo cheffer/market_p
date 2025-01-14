@@ -3,11 +3,48 @@ import { and, eq, like, sql } from 'drizzle-orm'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import { profession } from '../db/schema'
 import type {
+  CheckProfessions,
   ErrorHandlerType,
   GetProfessionsQuery,
   InputProfessionsBody,
   ProfessionsParams,
 } from '../schemas/types'
+
+export async function getCheckProfession(professionData: CheckProfessions) {
+  const query = await db
+    .select({
+      count: sql /*sql*/`COUNT(*)`.as('count'),
+    })
+    .from(profession)
+    .where(
+      and(
+        professionData.name
+          ? eq(profession.name, professionData.name)
+          : undefined,
+        professionData.specialization
+          ? eq(profession.specialization, professionData.specialization)
+          : undefined
+      )
+    )
+  const resultCheckProfession = await query
+  const result = Number(resultCheckProfession[0].count)
+  return result
+}
+
+export async function getProfessionById(filters: ProfessionsParams) {
+  const query = await db
+    .select({
+      name: profession.name,
+      specialization: profession.specialization,
+    })
+    .from(profession)
+    .where(eq(profession.professionId, filters.professionId))
+  const result = {
+    checkName: query[0].name,
+    checkSpecialization: query[0].specialization,
+  }
+  return result
+}
 
 export async function getProfessionsFromDB(filters: GetProfessionsQuery) {
   try {
@@ -27,15 +64,12 @@ export async function getProfessionsFromDB(filters: GetProfessionsQuery) {
 
     if (filters.name) {
       conditions.push(
-        eq(sql`LOWER(${profession.name})`, sql`LOWER(${filters.name})`)
+        sql`LOWER(${profession.name}) LIKE ${`%${filters.name.toLowerCase()}%`}`
       )
     }
     if (filters.specialization) {
       conditions.push(
-        eq(
-          sql`LOWER(${profession.specialization})`,
-          sql`LOWER(${filters.specialization})`
-        )
+        sql`LOWER(${profession.specialization}) LIKE ${`%${filters.specialization.toLowerCase()}%`}`
       )
     }
     if (filters.rank) {

@@ -9,6 +9,7 @@ import type {
   PutPurchasesBody,
 } from '../schemas/types'
 import { purchase } from '../db/schema'
+import { getSortingFromFilters } from '../utils/sorting'
 
 export async function getPurchasesFromDB(filters: GetPurchasesQuery) {
   try {
@@ -46,7 +47,9 @@ export async function getPurchasesFromDB(filters: GetPurchasesQuery) {
     if (conditions.length > 0) {
       query.where(and(...conditions))
     }
-
+    const sortByColumn = filters.sortBy || 'createdAt'
+    const sortMethod = getSortingFromFilters(filters, purchase[sortByColumn])
+    query.orderBy(sortMethod)
     query.limit(filters.limit).offset(filters.offset)
 
     const purchaseResult = await query

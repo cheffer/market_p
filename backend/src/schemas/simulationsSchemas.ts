@@ -3,6 +3,10 @@ import z from 'zod'
 // Schema for searching simulations (GET /simulations)
 export const getSimulationsQuerySchema = z.object({
   itemId: z.string().optional(),
+  sortBy: z
+    .enum(['quantity', 'currentBuyCost', 'currentSellProfit', 'createdAt'])
+    .optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   limit: z.string().optional().default('10').transform(Number),
   offset: z.string().optional().default('0').transform(Number),
 })

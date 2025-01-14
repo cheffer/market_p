@@ -27,10 +27,12 @@ export const simulationsController: FastifyPluginAsync = async app => {
       request: FastifyRequest<{ Querystring: GetSimulationsQuery }>,
       reply: FastifyReply
     ) => {
-      const { itemId, limit, offset } = request.query
+      const { itemId, sortBy, sortOrder, limit, offset } = request.query
       try {
         const { simulationsResult, pagination } = await getSimulationsService({
           itemId,
+          sortBy,
+          sortOrder,
           limit,
           offset,
         })

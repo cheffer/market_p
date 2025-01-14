@@ -36,6 +36,7 @@ import type {
   putCreaturesDropsBodySchema,
 } from './creaturesDropsSchemas'
 import type {
+  checkProfessionsSchema,
   getProfessionsQuerySchema,
   inputProfessionsBodySchema,
   professionsParams,
@@ -92,7 +93,7 @@ export type GetCreaturesQuery = z.infer<typeof getCreaturesQuerySchema>
 export type PostCreaturesBody = z.infer<typeof postCreaturesBodySchema>
 export type PutCreaturesBody = z.infer<typeof putCreaturesBodySchema>
 export type CreaturesParams = z.infer<typeof creaturesParams>
-export type CreaturesCrafts = z.infer<typeof checkCreaturesSchema>
+export type CheckCreatures = z.infer<typeof checkCreaturesSchema>
 
 // Creatures Drops
 export type GetCreaturesDropsQuery = z.infer<
@@ -108,6 +109,7 @@ export type CreaturesDropsParams = z.infer<typeof creaturesDropsParams>
 export type GetProfessionsQuery = z.infer<typeof getProfessionsQuerySchema>
 export type InputProfessionsBody = z.infer<typeof inputProfessionsBodySchema>
 export type ProfessionsParams = z.infer<typeof professionsParams>
+export type CheckProfessions = z.infer<typeof checkProfessionsSchema>
 
 // Purchases
 export type GetPurchasesQuery = z.infer<typeof getPurchasesQuerySchema>

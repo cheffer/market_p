@@ -7,7 +7,7 @@ export const getProfessionsQuerySchema = z.object({
   rank: z.string().optional(),
 })
 
-// Schema for creating and put professions (POST /professions)
+// Schema for creating and put professions (POST and PUT /professions)
 export const inputProfessionsBodySchema = z.object({
   name: z
     .string({ required_error: "The 'Name' field is mandatory." })
@@ -26,4 +26,14 @@ export const inputProfessionsBodySchema = z.object({
 // Schema for professionsId params
 export const professionsParams = z.object({
   professionId: z.string().min(1, { message: 'professionId cannot be empty.' }),
+})
+
+// Schema for check profession
+export const checkProfessionsSchema = z.object({
+  name: z.string({
+    required_error: "The 'name' field is mandatory.",
+  }),
+  specialization: z.string({
+    required_error: "The 'specialization' field is mandatory.",
+  }),
 })

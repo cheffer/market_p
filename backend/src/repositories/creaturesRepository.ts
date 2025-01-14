@@ -2,7 +2,7 @@ import { db } from '../db'
 import { and, eq, like, sql } from 'drizzle-orm'
 import { DatabaseError, handleDatabaseError } from '../errors/customErrors'
 import type {
-  CreaturesCrafts,
+  CheckCreatures,
   CreaturesParams,
   ErrorHandlerType,
   GetCreaturesQuery,
@@ -12,7 +12,7 @@ import type {
 import { creature } from '../db/schema'
 import { getSortingFromFilters } from '../utils/sorting'
 
-export async function getCheckCreature(creaturetData: CreaturesCrafts) {
+export async function getCheckCreature(creatureData: CheckCreatures) {
   const query = await db
     .select({
       count: sql /*sql*/`COUNT(*)`.as('count'),
@@ -20,10 +20,10 @@ export async function getCheckCreature(creaturetData: CreaturesCrafts) {
     .from(creature)
     .where(
       and(
-        creaturetData.name ? eq(creature.name, creaturetData.name) : undefined,
-        creaturetData.type ? eq(creature.type, creaturetData.type) : undefined,
-        creaturetData.location
-          ? eq(creature.location, creaturetData.location)
+        creatureData.name ? eq(creature.name, creatureData.name) : undefined,
+        creatureData.type ? eq(creature.type, creatureData.type) : undefined,
+        creatureData.location
+          ? eq(creature.location, creatureData.location)
           : undefined
       )
     )

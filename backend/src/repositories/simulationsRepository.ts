@@ -9,6 +9,7 @@ import type {
   PutSimulationsBody,
   SimulationsParams,
 } from '../schemas/types'
+import { getSortingFromFilters } from '../utils/sorting'
 
 export async function getSimulationsFromDB(filters: GetSimulationsQuery) {
   try {
@@ -30,13 +31,7 @@ export async function getSimulationsFromDB(filters: GetSimulationsQuery) {
         simulationId: simulation.simulationId,
         itemId: simulation.itemId,
         quantity: simulation.quantity,
-        minBuyCost: simulation.minBuyCost,
-        avgBuyCost: simulation.avgBuyCost,
-        maxBuyCost: simulation.maxBuyCost,
         currentBuyCost: simulation.currentBuyCost,
-        minSellProfit: simulation.minSellProfit,
-        avgSellProfit: simulation.avgSellProfit,
-        maxSellProfit: simulation.maxSellProfit,
         currentSellProfit: simulation.currentSellProfit,
         createdAt: simulation.createdAt,
         updatedAt: simulation.updatedAt,
@@ -52,6 +47,10 @@ export async function getSimulationsFromDB(filters: GetSimulationsQuery) {
     if (conditions.length > 0) {
       query.where(and(...conditions))
     }
+    const sortByColumn = filters.sortBy || 'createdAt'
+    const sortMethod = getSortingFromFilters(filters, simulation[sortByColumn])
+    query.orderBy(sortMethod)
+    query.limit(filters.limit).offset(filters.offset)
 
     query.limit(filters.limit).offset(filters.offset)
 
